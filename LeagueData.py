@@ -73,7 +73,7 @@ class LeagueData:
             count += 1
         return temp
     
-    def __old_get_standings_as_string(self):
+    def old_get_standings_as_string(self):
         result = ""
         result += str("Team").ljust(32, " ") + str("W") + str("L").rjust(5, " ") + str("Division").rjust(12, " ") + "\n"
         result += str("").ljust(25, '-') + "-".rjust(8, " ") + "-".rjust(5, " ") + "--------".rjust(12, " ") + "\n"
