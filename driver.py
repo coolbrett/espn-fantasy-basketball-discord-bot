@@ -1,38 +1,53 @@
 import discord
+from discord import option, application_command
+from discord.ext import commands
 from LeagueData import LeagueData
-from FBBot import FBBot
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-from discord.ext import commands
 
-intents = discord.Intents.default()
-intents.message_content = True
+dotenv_path = Path('.env')
+load_dotenv(dotenv_path=dotenv_path)
 
-client = discord.Client(intents=intents)
-league_data = LeagueData(121940, 2023)
-bot = commands.Bot(command_prefix='/', intents=intents)
-tree = discord.app_commands.CommandTree(client=client)
-guild_id = discord.Object(id=1057725116563341402)
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+league_data = LeagueData(os.getenv('LEAGUE_ID_BBL'), 2023)
+guild_id = os.getenv('GUILD_ID_BBL')
 
 #get guild ID by right-clicking on server icon then hit Copy ID
-@tree.command(name="test", description="testing", guild=guild_id)
-async def test_command(interaction):
+@bot.slash_command(name="hey", guild_ids=[guild_id])
+@option(
+    "hey", 
+    str, 
+    description="Brett"
+)
+async def hey(interaction):
     await interaction.response.send_message("Hello!")
 
-#seemingly easier way to do a command, unlike above method
+@bot.command(name="three-weeks", description="Grab past three weeks totals", guild=discord.Object(id=guild_id))
+async def three_weeks(interaction: discord.Interaction):
+    await interaction.response.send_message("three-weeks")
+
+
+"""
 @bot.command()
-async def three_weeks(ctx, args):
-    await ctx.send(str(args))
+async def hey(ctx, *args):
+    print(args)
+    await ctx.response.send_message("Hey")
+"""
 
-@client.event
+@bot.event
 async def on_ready():
-    await tree.sync(guild=discord.Object(id=1057725116563341402))
-    print(f'We have logged in as {client.user}')
+    print(f'We have logged in as {bot.user}')
 
-@client.event
+"""
+@bot.event
 async def on_message(message):
-    if message.author == client.user:
+
+    await bot.process_commands(message)
+
+    if message.author == bot.user:
         return
 
     if message.content.startswith('$roast'):
@@ -74,18 +89,5 @@ async def on_message(message):
     if message.content.startswith('$standings'):
         result = league_data.old_get_standings_as_string()
         await message.channel.send(result)
-
-    if message.content.startswith('$test'):
-        result = ""
-        result += str("Team").ljust(59, " ") + str("W") + str("L").rjust(4, " ") + str("Division").rjust(11, " ") + "\n"
-        result += str("").ljust(32, '-') + "-".rjust(8, " ") + "-".rjust(5, " ") + "--------".rjust(12, " ") + "\n"
-        #for team in self.league.standings():
-            #result += str(team.team_name).ljust(32, " ") + str(team.wins) + str(team.losses).rjust(5, " ") + str(team.division_name).rjust(10, " ") + "\n"
-        
-        await message.channel.send(result)
-
-
-
-dotenv_path = Path('.env')
-load_dotenv(dotenv_path=dotenv_path)
-client.run(os.getenv('BOT_TOKEN'))
+"""
+bot.run(os.getenv('BOT_TOKEN'))
