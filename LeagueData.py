@@ -13,6 +13,21 @@ class LeagueData:
         """Initializer for LeagueData object"""
         self.league = League(league_id=league_id, year=year)
 
+    def find_current_week(self):
+        """The ESPN API I'm using doesn't keep track of the current week in the fantasy year it is, 
+            so this is an attempt to find the current week"""
+        
+        #grabbing first two teams and comparing their games played just in case the first team had a bye week
+        temp_team = self.league.teams[0]
+        other_team = self.league.teams[1]
+        num = temp_team.wins + temp_team.losses + temp_team.ties + 1
+        other = other_team.wins + other_team.losses + other_team.ties + 1
+
+        if num == other | num > other:
+            return num
+        else:
+            return other
+
     def set_league(self, league_id: int, year: int):
         """Gives ability to change leagues"""
         self.league = League(league_id=league_id, year=year)
@@ -22,7 +37,7 @@ class LeagueData:
         self.league = League(league_id=self.league.league_id, year=year)
 
     def three_weeks_total_as_string(self, week: int):
-        """Builds and prints a sorted list of teams and their three week totals"""
+        """Builds and returns a string that is a sorted list of teams and their three week totals"""
         data = self.__get_last_three_weeks_data(week)
         three_weeks_list = self.__build_list_three_weeks_data(data)
         return self.__report_three_weeks_list(three_weeks_list)
