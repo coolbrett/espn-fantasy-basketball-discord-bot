@@ -1,5 +1,11 @@
 # Basketball API
 from espn_api.basketball import *
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+dotenv_path = Path('.env')
+load_dotenv(dotenv_path=dotenv_path)
 
 """
 Class for the data being built around fantasy league ID and year given
@@ -11,11 +17,11 @@ class LeagueData:
 
     def __init__(self, league_id: int, year: int):
         """Initializer for LeagueData object"""
-        self.league = League(league_id=league_id, year=year)
+        self.league = League(league_id=league_id, year=year, espn_s2=os.getenv('ESPN_S2_BBL'), swid=os.getenv('SWID_BBL'))
 
     def find_current_week(self):
-        """The ESPN API I'm using doesn't keep track of the current week in the fantasy year it is, 
-            so this is an attempt to find the current week"""
+        """The ESPN API being used doesn't keep track of the current week in the fantasy year it is, 
+            so this finds the current week and returns it"""
         
         #grabbing first two teams and comparing their games played just in case the first team had a bye week
         temp_team = self.league.teams[0]
@@ -30,11 +36,11 @@ class LeagueData:
 
     def set_league(self, league_id: int, year: int):
         """Gives ability to change leagues"""
-        self.league = League(league_id=league_id, year=year)
+        self.league = League(league_id=league_id, year=year, espn_s2=os.getenv('ESPN_S2_BBL'), swid=os.getenv('SWID_BBL'))
 
     def set_year(self, year: int):
         """Set league year to a different year"""
-        self.league = League(league_id=self.league.league_id, year=year)
+        self.league = League(league_id=self.league.league_id, year=year, espn_s2=os.getenv('ESPN_S2_BBL'), swid=os.getenv('SWID_BBL'))
 
     def three_weeks_total_as_string(self, week: int):
         """Builds and returns a string that is a sorted list of teams and their three week totals"""
@@ -87,17 +93,22 @@ class LeagueData:
             temp += "\n" + str(count) + ". " + str(team['team_name']) + ": **" + str(int(team['past_three_weeks_total'])) + "**"
             count += 1
         return temp
+
+    def get_standings(self) -> dict:
+        """Grabs sorted list of standings, and splits the teams into their divisions
+        || Each key is a division and value is a list of teams"""
+        teams = self.league.standings()
+        teams_by_division = dict()
+
+        for team in teams:
+            if team.division_name in teams_by_division:
+                teams_by_division[team.division_name] += [team] 
+            else:
+                teams_by_division.__setitem__(team.division_name, [team])
     
-    def old_get_standings_as_string(self):
-        result = ""
-        result += str("Team").ljust(32, " ") + str("W") + str("L").rjust(5, " ") + str("Division").rjust(12, " ") + "\n"
-        result += str("").ljust(25, '-') + "-".rjust(8, " ") + "-".rjust(5, " ") + "--------".rjust(12, " ") + "\n"
-        for team in self.league.standings():
-            result += str(team.team_name).ljust(32, " ") + str(team.wins) + str(team.losses).rjust(5, " ") + str(team.division_name).rjust(10, " ") + "\n"
-        print(result)
-        return result
+        #print(str(teams_by_division.keys()))
+        #print(str(teams_by_division['East']))
+
+        return teams_by_division
     
-    def get_standings_as_string(self):
-        result = ""
-        result += str("brett")
-        return result
+    
