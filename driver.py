@@ -42,30 +42,23 @@ async def scoreboard(interaction: discord.Interaction, week: int=None, year: int
     if year != None:
         if week != None:
             league_data.set_year(year=year)
-            print("League year set to: " + str(league_data.league.year))
         else:
             await interaction.response.send_message("Provide a week number if going into previous seasons!")
             return
 
     if week == None: 
-        week = league_data.find_current_week()
-        print("Week set to: " + str(week))
-    
-    print("Week is: {}".format(week))
+        week = league_data.find_current_week()    
     
     matchups = league_data.league.scoreboard(week)
     embed = discord.Embed(title=str(league_data.league.year - 1)+ "-" + str(league_data.league.year) + " Week " + str(week) + " Scoreboard")
     for matchup in matchups:
         score = str(matchup.away_team.team_name) + " `" + str(int(matchup.away_final_score)) + "` | `" + str(int(matchup.home_final_score)) + "` " + str(matchup.home_team.team_name)
-        #away_record = str(matchup.away_team.wins) + "-" + str(matchup.away_team.losses) + "-" + str(matchup.away_team.ties)
         description = "".ljust(64, "-")
         embed.add_field(name=score, value=description, inline=False)
     
     #set year back to original year if it was changed
     if league_data.league.year != original_year:
         league_data.set_year(original_year)
-        print("League year reset to: " + str(league_data.league.year))
-    print("League year: {}, week: {}\nDONE\n".format(league_data.league.year, league_data.find_current_week()))
     
     await interaction.response.send_message(embed=embed)
 
@@ -76,18 +69,17 @@ async def standings(interaction: discord.Interaction, year: int=None):
     original_year = league_data.league.year
     if year != None:
         league_data.set_year(year=year)
-
+    
     embed = discord.Embed(title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year) + " Standings")
     standings = league_data.get_standings()
-    #iterate through each division and add a field for each division and the description needs to be the teams W-L and other things
     for div, list_of_teams in standings.items():
         #print(str(div))
         place = 1
         description = ""
-        description += "`#     Team".ljust(38) + "W-L-T`\n"
+        description += "`#    Team".ljust(15) + "W-L-T`\n"
         for team in list_of_teams:
             #print(str(team))
-            description += "`" + str(place) + ")     " + team.team_name.strip().ljust(25) + " |  {}-{}-{}".format(team.wins, team.losses, team.ties).ljust(9) + "`\n"
+            description += "`" + str(place) + ")   " + team.team_abbrev.ljust(5) + " |  {}-{}-{}".format(team.wins, team.losses, team.ties).ljust(9) + "`\n"
             place += 1
         embed.add_field(name=str(div), value=description, inline=False)
 
@@ -96,6 +88,110 @@ async def standings(interaction: discord.Interaction, year: int=None):
         league_data.set_year(year=original_year)
 
     await interaction.response.send_message(embed=embed)
+
+
+@bot.command(name="draft-recap", description="Get Draft Recap from current or previous season", guild_ids=[guild_id])
+async def draft_recap(interaction: discord.Interaction, year: int=None, round: int=None):
+    original_year = league_data.league.year
+    if year != None:
+        league_data.set_year(year=year)
+    
+    embed = discord.Embed(title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year) + " Draft Recap")
+    draft_recap = league_data.get_draft_recap()
+
+    if round == None:
+        for round_num, list_of_picks in draft_recap.items():
+            #header line
+            description = "`#  Team".ljust(13) + "Pick`\n"
+            for pick in list_of_picks:
+                #append pick info
+                player_name = pick.playerName
+                if len(player_name) > 18:
+                    temp = player_name.split()
+                    player_name = f"{temp[0][0]}. {temp[1]}"
+
+                description += "`" + str(str(pick.round_pick) + ")").ljust(4) + pick.team.team_abbrev.ljust(5) + "|  {}".format(player_name).ljust(9) + "`\n"
+
+            description += "\n"
+            embed.add_field(name=("Round: " + str(round_num)), value=description, inline=False)
+    else:
+        round_list_of_picks = draft_recap[round]
+        description = "`#  Team".ljust(13) + "Pick`\n"
+        for pick in round_list_of_picks:
+            #append pick info
+            player_name = pick.playerName
+            if len(player_name) > 18:
+                temp = player_name.split()
+                player_name = f"{temp[0][0]}. {temp[1]}"
+
+            description += "`" + str(str(pick.round_pick) + ")").ljust(4) + pick.team.team_abbrev.ljust(5) + "|  {}".format(player_name).ljust(9) + "`\n"
+
+        description += "\n"
+        embed.add_field(name=("Round: " + str(round)), value=description, inline=False)
+
+    
+    #set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(year=original_year)
+    
+    await interaction.response.send_message(embed=embed)
+
+
+@bot.command(name="abbreviations", description="Gets all abbreviations of teams in the league and their corresponding team name", guild_ids=[guild_id])
+async def abbreviations(interaction: discord.Interaction, year: int=None):
+    original_year = league_data.league.year
+    if year != None:
+        league_data.set_year(year=year)
+    
+    embed = discord.Embed(title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year))
+    description = "`Abbrev".ljust(8) + "| Team`\n"
+
+    abbreviations = league_data.get_abbreviations()
+
+    for abbrev, team_name in abbreviations.items():
+        description += f"`{abbrev}".ljust(8) + f"| {team_name}`\n"
+    embed.add_field(name="Abbreviations", value=description, inline=False)
+
+
+    #set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(year=original_year)
+
+    await interaction.response.send_message(embed=embed)
+
+
+@bot.command(name="history", description="Gets Final Standings of the league of the year given", guild_ids=[guild_id])
+async def history(interaction: discord.Interaction, year: int):
+    original_year = league_data.league.year
+    
+    if original_year == year:
+        await interaction.response.send_message("Cannot use /history on current season -- try /standings")
+        return
+
+    league_data.set_year(year=year)
+    
+    embed = discord.Embed(title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year) + " History")
+    title = ""
+    description = ""
+
+    final_standings = league_data.get_history()
+    place = 2
+    for team in final_standings:
+        if team.team_id == final_standings[0].team_id:
+            #Champion
+            title = f"Champion🏆: {team.team_name}"
+        else:
+            #the rest
+            description += f"`{place}) {team.team_abbrev}".ljust(10) + f"| {team.wins}-{team.losses}-{team.ties}`\n"
+            place += 1
+
+    embed.add_field(name=title, value=description, inline=False)
+    #set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(year=original_year)
+    
+    await interaction.response.send_message(embed=embed)
+
 
 @bot.event
 async def on_ready():

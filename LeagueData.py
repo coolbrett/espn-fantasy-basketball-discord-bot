@@ -105,10 +105,32 @@ class LeagueData:
                 teams_by_division[team.division_name] += [team] 
             else:
                 teams_by_division.__setitem__(team.division_name, [team])
-    
-        #print(str(teams_by_division.keys()))
-        #print(str(teams_by_division['East']))
 
         return teams_by_division
     
+    def get_draft_recap(self) -> dict:
+        """Gets draft recap and turns into a dictionary where keys are the round numbers, 
+            and values are the list of Pick objects in that round"""
+
+        picks_by_round = dict()
+
+        for pick in self.league.draft:
+            if pick.round_num in picks_by_round:
+                picks_by_round[pick.round_num] += [pick]
+            else:
+                picks_by_round.__setitem__(pick.round_num, [pick])
+        
+        return picks_by_round
     
+    def get_abbreviations(self) -> dict:
+        """Gets all abbreviations of teams in the league and their corresponding team name"""
+        abbrev = dict()
+
+        for team in self.league.teams:
+            abbrev.__setitem__(team.team_abbrev, team.team_name)
+
+        return abbrev
+    
+    def get_history(self) -> list:
+        """Gets standings of league as a sorted list of teams by final record"""
+        return self.league.standings()
