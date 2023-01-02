@@ -165,6 +165,7 @@ async def history(interaction: discord.Interaction, year: int):
     original_year = league_data.league.year
     
     if original_year == year:
+        #Don't know how to tell when season is over, so current year is not available until next year starts
         await interaction.response.send_message("Cannot use /history on current season -- try /standings")
         return
 
@@ -192,6 +193,31 @@ async def history(interaction: discord.Interaction, year: int):
     
     await interaction.response.send_message(embed=embed)
 
+@bot.command(name="new_scoreboard", description="Grab scoreboard from current week or provide a week number", guild_ids=[guild_id])
+async def new_scoreboard(interaction: discord.Interaction, week: int=None, year: int=None):
+    #scoreboard is unable to get playoff matchups 
+    original_year = league_data.league.year
+    if year != None:
+        if week != None:
+            league_data.set_year(year=year)
+        else:
+            await interaction.response.send_message("Provide a week number if going into previous seasons!")
+            return
+
+    if week == None: 
+        week = league_data.find_current_week()    
+    
+    matchups = league_data.league.scoreboard(week)
+    embed = discord.Embed(title=str(league_data.league.year - 1)+ "-" + str(league_data.league.year) + " Week " + str(week) + " Scoreboard")
+    for matchup in matchups:
+        #each field will be team, the description will be their top scorer (and later injury rate?)
+        continue
+    
+    #set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(original_year)
+    
+    await interaction.response.send_message(embed=embed)
 
 @bot.event
 async def on_ready():
