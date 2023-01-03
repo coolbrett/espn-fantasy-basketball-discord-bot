@@ -1,5 +1,6 @@
 # Basketball API
 from espn_api.basketball import *
+from espn_api.basketball import box_player, box_score
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -134,3 +135,18 @@ class LeagueData:
     def get_history(self) -> list:
         """Gets standings of league as a sorted list of teams by final record"""
         return self.league.standings()
+    
+    def get_top_scorer(self, lineup: list) -> box_player:
+        """Gets top fantasy point scorer from a list of Box Player objects"""
+        lineup.sort(key=lambda player: player.points, reverse=True)
+        return lineup[0]
+
+    def get_box_score_of_matchup(self, week: int, team: Team) -> box_score:
+        """Gets box score of week and Team passed in"""
+        box_scores_of_week = self.league.box_scores(matchup_period=week)
+
+        for box_score in box_scores_of_week:
+            #compare team id's -- if True then return
+            if box_score.away_team.team_id == team.team_id or box_score.home_team.team_id == team.team_id:
+                return box_score
+

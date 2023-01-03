@@ -6,6 +6,7 @@ def main():
     #scoreboard(league_data=league_data)
     #get_draft_recap(league_data=league_data)
     #get_abbreviations(league_data=league_data)
+    get_top_scorer(league_data=league_data)
     return
 
 def get_standings(league_data: LeagueData) -> dict:
@@ -52,5 +53,19 @@ def get_abbreviations(league_data: LeagueData) -> dict:
 def get_history(league_data: LeagueData) -> list:
     """Gets Final Standings of league"""
     return league_data.league.standings()
+
+def get_top_scorer(league_data: LeagueData):
+    """Gets top fantasy point scorer from a list of Box Player objects"""
+
+    for box in league_data.league.box_scores(2):
+        h_lineup = box.home_lineup
+        a_lineup = box.away_lineup
+
+        h_lineup.sort(key=lambda player: player.points, reverse=True)
+
+        for player in h_lineup:
+            print(player)
+        
+        break
 
 main()

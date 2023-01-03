@@ -29,8 +29,7 @@ async def three_weeks(interaction: discord.Interaction, week: int=None):
     if week == None:
         week = league_data.find_current_week()
     
-    result = ""
-    result += "*Showing data from week {} of year {}*\n".format(week, league_data.league.year)
+    result = "*Showing data from week {} of year {}*\n".format(week, league_data.league.year)
     result += league_data.three_weeks_total_as_string(week=week)
     await interaction.response.send_message(result)
 
@@ -208,16 +207,30 @@ async def new_scoreboard(interaction: discord.Interaction, week: int=None, year:
         week = league_data.find_current_week()    
     
     matchups = league_data.league.scoreboard(week)
+
+    #embedded messages can only have 25 fields, so multiple embedded messages are needed just in case a league
+    #has more than 12 teams
+    embeds = []
     embed = discord.Embed(title=str(league_data.league.year - 1)+ "-" + str(league_data.league.year) + " Week " + str(week) + " Scoreboard")
-    for matchup in matchups:
-        #each field will be team, the description will be their top scorer (and later injury rate?)
-        continue
+    embeds.append(embed)
+    for matchup in matchups:        
+
+        #this doesn't work for previous weeks
+        box_score_of_matchup = league_data.get_box_score_of_matchup(week=league_data.find_current_week(), team=matchup.home_team)
+        top_scorer_home = league_data.get_top_scorer(lineup=box_score_of_matchup.home_lineup)
+        top_scorer_away = league_data.get_top_scorer(lineup=box_score_of_matchup.away_lineup)
+
+        #Top performer field goes off the side on the app :/
+        embed = discord.Embed(title="")
+        embed.add_field(name=f"{matchup.away_team.team_name}: {int(matchup.away_final_score)}\n", value=f"{matchup.away_team.wins}-{matchup.away_team.losses}-{matchup.away_team.ties}\nTop Performer -> `{top_scorer_away.name}: " + str(int(top_scorer_away.points)) + "`", inline=False)
+        embed.add_field(name=f"{matchup.home_team.team_name}: {int(matchup.home_final_score)}\n", value=f"{matchup.home_team.wins}-{matchup.home_team.losses}-{matchup.home_team.ties}\nTop Performer -> `{top_scorer_home.name}: " + str(int(top_scorer_home.points)) + "`", inline=False)
+        embeds.append(embed)
     
     #set year back to original year if it was changed
     if league_data.league.year != original_year:
         league_data.set_year(original_year)
     
-    await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(embeds=embeds)
 
 @bot.event
 async def on_ready():
