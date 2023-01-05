@@ -143,10 +143,42 @@ class LeagueData:
 
     def get_box_score_of_matchup(self, week: int, team: Team) -> box_score:
         """Gets box score of week and Team passed in"""
-        box_scores_of_week = self.league.box_scores(matchup_period=week)
+        box_scores_of_week = self.league.box_scores(matchup_period=week, matchup_total=True)
 
         for box_score in box_scores_of_week:
             #compare team id's -- if True then return
             if box_score.away_team.team_id == team.team_id or box_score.home_team.team_id == team.team_id:
                 return box_score
+
+    def get_box_scores_and_matchups_of_week(self, week: int) -> list:
+        """Grabs list of box scores and matchups of week given, and returns a list of dictionaries
+            containing the matchups and their corresponding box scores"""
+        print(f"in get_box_scores_and_matchups_of_week")
+        box_scores = self.league.box_scores(matchup_period=week)
+        print("got box scores")
+        print(f"Year: {self.league.year} Week: {week}")
+        matchups = self.league.scoreboard(matchupPeriod=week)
+        print('got scoreboard')
+        data = []
+        count = 0
+        for matchup in matchups:
+            data.append({matchup: box_scores[count]})
+            count += 1
+        return data
+    
+    def shorten_player_name(self, player_name: str) -> str:
+        """Shorterns player name to be first inital then last name [G. Antetokounmpo]"""
+        temp = player_name.split()
+        return f"{temp[0][0]}. {temp[1]}"
+    
+    def find_length_of_longest_team_name(self, matchup: Matchup) -> int:
+        """Returns the length of the longest team name of a given matchup"""
+        num = 0
+
+        if len(matchup.away_team.team_name) > len(matchup.home_team.team_name):
+            num = len(matchup.away_team.team_name)
+        else:
+            num = len(matchup.home_team.team_name)
+
+        return num
 

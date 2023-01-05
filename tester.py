@@ -1,12 +1,14 @@
 from LeagueData import LeagueData
 
 def main():
-    league_data = LeagueData(121940, 2023)
+    league_data = LeagueData(121940, 2021)
     #temp = get_standings(league_data=league_data)
     #scoreboard(league_data=league_data)
     #get_draft_recap(league_data=league_data)
     #get_abbreviations(league_data=league_data)
-    get_top_scorer(league_data=league_data)
+    #get_top_scorer(league_data=league_data)
+    #get_box_scores_and_matchups_of_week(league_data=league_data, week=11)
+    league_data.league.scoreboard(matchupPeriod=1)
     return
 
 def get_standings(league_data: LeagueData) -> dict:
@@ -67,5 +69,23 @@ def get_top_scorer(league_data: LeagueData):
             print(player)
         
         break
+
+def get_box_scores_and_matchups_of_week(league_data: LeagueData, week: int) -> list:
+        """Grabs list of box scores and matchups of week given, and returns a list of dictionaries
+            containing the matchups and their corresponding box scores"""
+        box_scores = league_data.league.box_scores(matchup_period=week)
+        matchups = league_data.league.scoreboard(matchupPeriod=week)
+        data = []
+        count = 0
+        for matchup in matchups:
+            #print(str(matchup))
+            #print(box_scores[count].home_team.team_name)
+            #print(box_scores[count].away_team.team_name)
+            data.append({matchup: box_scores[count]})
+            #print(str(data))
+            count += 1
+        #print(str(data))
+        return data
+        
 
 main()

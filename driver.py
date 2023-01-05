@@ -34,34 +34,6 @@ async def three_weeks(interaction: discord.Interaction, week: int=None):
     await interaction.response.send_message(result)
 
 
-@bot.command(name="scoreboard", description="Grab scoreboard from current week or provide a week number", guild_ids=[guild_id])
-async def scoreboard(interaction: discord.Interaction, week: int=None, year: int=None):
-    #scoreboard is unable to get playoff matchups 
-    original_year = league_data.league.year
-    if year != None:
-        if week != None:
-            league_data.set_year(year=year)
-        else:
-            await interaction.response.send_message("Provide a week number if going into previous seasons!")
-            return
-
-    if week == None: 
-        week = league_data.find_current_week()    
-    
-    matchups = league_data.league.scoreboard(week)
-    embed = discord.Embed(title=str(league_data.league.year - 1)+ "-" + str(league_data.league.year) + " Week " + str(week) + " Scoreboard")
-    for matchup in matchups:
-        score = str(matchup.away_team.team_name) + " `" + str(int(matchup.away_final_score)) + "` | `" + str(int(matchup.home_final_score)) + "` " + str(matchup.home_team.team_name)
-        description = "".ljust(64, "-")
-        embed.add_field(name=score, value=description, inline=False)
-    
-    #set year back to original year if it was changed
-    if league_data.league.year != original_year:
-        league_data.set_year(original_year)
-    
-    await interaction.response.send_message(embed=embed)
-
-
 @bot.command(name="standings", description="Current Standings for Fantasy League", guild_ids=[guild_id])
 async def standings(interaction: discord.Interaction, year: int=None):
     
@@ -106,8 +78,7 @@ async def draft_recap(interaction: discord.Interaction, year: int=None, round: i
                 #append pick info
                 player_name = pick.playerName
                 if len(player_name) > 18:
-                    temp = player_name.split()
-                    player_name = f"{temp[0][0]}. {temp[1]}"
+                    player_name = league_data.shorten_player_name(player_name=player_name)
 
                 description += "`" + str(str(pick.round_pick) + ")").ljust(4) + pick.team.team_abbrev.ljust(5) + "|  {}".format(player_name).ljust(9) + "`\n"
 
@@ -192,44 +163,56 @@ async def history(interaction: discord.Interaction, year: int):
     
     await interaction.response.send_message(embed=embed)
 
-@bot.command(name="new_scoreboard", description="Grab scoreboard from current week or provide a week number", guild_ids=[guild_id])
-async def new_scoreboard(interaction: discord.Interaction, week: int=None, year: int=None):
-    #scoreboard is unable to get playoff matchups 
-    original_year = league_data.league.year
+@bot.command(name="scoreboard", description="Grab scoreboard from current week or provide a week number", guild_ids=[guild_id])
+async def scoreboard(interaction: discord.Interaction, week: int=None, year: int=None):
+    #scoreboard is unable to get playoff matchups
+    #Box scores cannot be used before 2019, so command breaks when going to 2018 or earlier
+    #Errors out on years where the league has uneven teams -- bye weeks for some teams
+    original_year = league_data.league.year 
     if year != None:
         if week != None:
             league_data.set_year(year=year)
+        elif year < 2019:
+            await interaction.response.send_message("Currently can't go back further than 2019 | Will be added soon!")
+            return
         else:
             await interaction.response.send_message("Provide a week number if going into previous seasons!")
             return
 
     if week == None: 
-        week = league_data.find_current_week()    
-    
-    matchups = league_data.league.scoreboard(week)
+        week = league_data.find_current_week()
 
     #embedded messages can only have 25 fields, so multiple embedded messages are needed just in case a league
     #has more than 12 teams
     embeds = []
-    embed = discord.Embed(title=str(league_data.league.year - 1)+ "-" + str(league_data.league.year) + " Week " + str(week) + " Scoreboard")
+    embed = discord.Embed(title="Week " + str(week) + " Scoreboard (" + str(league_data.league.year - 1)+ "-" + str(league_data.league.year) + ")")
     embeds.append(embed)
-    for matchup in matchups:        
+    print(f"week: {week}")
+    list_of_matchup_dicts = league_data.get_box_scores_and_matchups_of_week(week=week)
 
-        #this doesn't work for previous weeks
-        box_score_of_matchup = league_data.get_box_score_of_matchup(week=league_data.find_current_week(), team=matchup.home_team)
-        top_scorer_home = league_data.get_top_scorer(lineup=box_score_of_matchup.home_lineup)
-        top_scorer_away = league_data.get_top_scorer(lineup=box_score_of_matchup.away_lineup)
+    for data in list_of_matchup_dicts:
+        for matchup, box_score in data.items():
+            
+            top_scorer_home = league_data.get_top_scorer(lineup=box_score.home_lineup)
+            top_scorer_away = league_data.get_top_scorer(lineup=box_score.away_lineup)
 
-        #Top performer field goes off the side on the app :/
-        embed = discord.Embed(title="")
-        embed.add_field(name=f"{matchup.away_team.team_name}: {int(matchup.away_final_score)}\n", value=f"{matchup.away_team.wins}-{matchup.away_team.losses}-{matchup.away_team.ties}\nTop Performer -> `{top_scorer_away.name}: " + str(int(top_scorer_away.points)) + "`", inline=False)
-        embed.add_field(name=f"{matchup.home_team.team_name}: {int(matchup.home_final_score)}\n", value=f"{matchup.home_team.wins}-{matchup.home_team.losses}-{matchup.home_team.ties}\nTop Performer -> `{top_scorer_home.name}: " + str(int(top_scorer_home.points)) + "`", inline=False)
-        embeds.append(embed)
+            #Top performer field goes off the side on the app :/
+            pad_amount = league_data.find_length_of_longest_team_name(matchup=matchup)
+            embed = discord.Embed(title="")
+            if len(top_scorer_away.name) > 18:
+                top_scorer_away.name = league_data.shorten_player_name(player_name=top_scorer_away.name)
+            elif len(top_scorer_home.name) > 18:
+                top_scorer_home.name = league_data.shorten_player_name(player_name=top_scorer_home.name)
+
+            pad_amount = league_data.find_length_of_longest_team_name(matchup=matchup) + 10
+            embed.add_field(name= "".ljust(pad_amount, "-") + f"\n{matchup.away_team.team_name}:" + f" {int(matchup.away_final_score)}\n", value=f"**{matchup.away_team.wins}-{matchup.away_team.losses}-{matchup.away_team.ties}**\n\n__**Top Performer**__\n**{top_scorer_away.name}**: **" + str(int(top_scorer_away.points)) + "**\n**" + "".ljust(pad_amount, "-") + "**", inline=False)
+            embed.add_field(name=f"{matchup.home_team.team_name}:" + f" {int(matchup.home_final_score)}\n", value=f"**{matchup.home_team.wins}-{matchup.home_team.losses}-{matchup.home_team.ties}**\n\n__**Top Performer**__\n**{top_scorer_home.name}**: **" + str(int(top_scorer_home.points)) + "**\n**" + "".ljust(pad_amount, "-") + "**", inline=False)
+            embeds.append(embed)
     
     #set year back to original year if it was changed
     if league_data.league.year != original_year:
         league_data.set_year(original_year)
-    
+
     await interaction.response.send_message(embeds=embeds)
 
 @bot.event
