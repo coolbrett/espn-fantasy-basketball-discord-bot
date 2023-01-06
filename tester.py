@@ -1,14 +1,19 @@
 from LeagueData import LeagueData
 
+"""
+This file is just a tester file. Used to easily test out some code before 
+putting it into other(more important) files
+"""
+
 def main():
-    league_data = LeagueData(121940, 2021)
+    league_data = LeagueData(121940, 2023)
     #temp = get_standings(league_data=league_data)
     #scoreboard(league_data=league_data)
     #get_draft_recap(league_data=league_data)
     #get_abbreviations(league_data=league_data)
     #get_top_scorer(league_data=league_data)
     #get_box_scores_and_matchups_of_week(league_data=league_data, week=11)
-    league_data.league.scoreboard(matchupPeriod=1)
+    #league_data.league.scoreboard(matchupPeriod=1)
     return
 
 def get_standings(league_data: LeagueData) -> dict:

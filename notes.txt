@@ -1,0 +1,34 @@
+
+TO-DO 
+-----
+- Redo three-weeks
+- Refactor scoreboard to be able to go further back than 2019
+- Add descriptions to parameters of commands (I can't figure this out wtf)
+- Look into adding logos next to team names on scoreboard (doubtful)
+- Add /boxscore command to report player totals for a matchup -- thinking maybe report box score
+- % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
+- injury rate stat
+
+BEGINNER TASKS
+--------------
+- Write a command that sends a saying based upon a random number
+- Write a command that sends a message of a list of all the commands LeBot knows
+- Write a basic README file using markdown that has a title, description, and authors listed
+
+FUTURE WORK - once the bot is polished and bulletproof
+-----------
+- refactor and figure out an initial set up process so that this bot can be used
+    for other H2H FBB leagues
+- Add roto support??
+- Add error handling for incorrect parameters for commands
+- deploy the bot somewhere
+- set up github actions for automated deployments
+
+NOTES
+-----
+- If the FBB league is, or has ever been, a private league then you need to provide 
+    espn_s2 and swid when building the league object -- instructions below
+    (https://github.com/cwendt94/espn-api/discussions/150)
+
+- the /standings command on NBA Bot shows the limit on mobile
+- NO COMMANDS THAT @ PEOPLE -- THAT SHIT IS ANNOYING
