@@ -4,6 +4,12 @@ from LeagueData import LeagueData
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPDF, renderPM
+import requests
+from PIL import Image
+from io import BytesIO
+
 
 """
 This is the main file of the discord bot. All commands are being written here.
@@ -253,6 +259,35 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
         league_data.set_year(original_year)
 
     await interaction.response.send_message(embeds=embeds)
+
+
+@bot.command(name="logos", description="Show logos of all teams in league", guild_ids=[guild_id])
+async def logos(interaction: discord.Interaction, year: int = None, team_abbreviation: str = None):
+    #ONLY PNG, JPG, AND JPEG IMAGES ARE SUPPORTED ON EMBEDS
+    #https://docs.pycord.dev/en/stable/faq.html#how-do-i-use-a-local-image-file-for-an-embed-image
+    embed = discord.Embed()
+    files = []
+    list_of_teams = league_data.league.teams
+    logo_url = list_of_teams[1].logo_url
+    
+    #save svg locally
+    response = requests.get(logo_url)
+    with open(f"images/svg/{list_of_teams[1].team_id}.svg", 'wb') as file:
+        file.write(response.content)
+
+    #then pass svg to svg2rlg 
+    drawing = svg2rlg(path=f"images/svg/{list_of_teams[1].team_id}.svg")
+
+    #then pass drawing to renderpm to convert to png
+    renderPM.drawToFile(drawing, f"images/png/{list_of_teams[1].team_id}.png")
+
+    file = discord.File(f"images/png/{list_of_teams[1].team_id}.png", filename=f"{list_of_teams[1].team_id}.png")
+    files.append(file)
+
+    #below code is reachable despite VSCode saying it's not
+    embed.set_image(url=f"attachment://{list_of_teams[1].team_id}.png")
+
+    await interaction.response.send_message(embed=embed, files=files)
 
 
 @bot.event

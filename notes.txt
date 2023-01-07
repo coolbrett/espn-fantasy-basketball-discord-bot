@@ -1,7 +1,9 @@
 
 TO-DO 
 -----
-- Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
+- Look into adding team logo's on certain commands -- teams have logo url fields
+    I'm doubtful this will work considering there is a 3 second window and fetching multiple images probably
+    takes too much time
 - Add /boxscore command to report player totals for a matchup -- thinking maybe report box score
 - % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
 - injury rate stat
@@ -11,8 +13,10 @@ BEGINNER TASKS
 - Write a command that sends a saying based upon a random number
 - Write a command that sends a message of a list of all the commands LeBot knows
 - Write a basic README file using markdown that has a title, description, and authors listed
+- Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
 
-FUTURE WORK - once the bot is polished and bulletproof
+
+FUTURE WORK - once the bot is polished, bulletproof, and well-designed
 -----------
 - refactor and figure out an initial set up process so that this bot can be used
     for other H2H FBB leagues
