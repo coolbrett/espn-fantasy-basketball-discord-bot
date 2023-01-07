@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands as commands
 from LeagueData import LeagueData
 import os
 from dotenv import load_dotenv
@@ -35,13 +36,15 @@ async def hey(interaction: discord.Interaction):
              description="Grabs three week totals for each team from the week number given and sends a sorted list",
              guild_ids=[guild_id])
 # Would like to add descriptions to parameter but do not know how
+# Don't know if adding the feature of going back into previous seaons is necessary
 async def three_weeks(interaction: discord.Interaction, week: int = None):
+    print("received three-weeks")
     if week is None:
         week = league_data.find_current_week()
-
-    result = "*Showing data from week {} of year {}*\n".format(week, league_data.league.year)
-    result += league_data.three_weeks_total_as_string(week=week)
-    await interaction.response.send_message(result)
+    
+    embed = discord.Embed(title="")
+    embed.add_field(name=f"Past three weeks' totals from weeks {week - 2}, {week - 1}, {week} of {league_data.league.year - 1}-{league_data.league.year}", value=league_data.three_weeks_total_as_string(week=week))
+    await interaction.response.send_message(embed=embed)
 
 
 @bot.command(name="standings", description="Current Standings for Fantasy League", guild_ids=[guild_id])
@@ -53,16 +56,11 @@ async def standings(interaction: discord.Interaction, year: int = None):
     embed = discord.Embed(title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year) + " Standings")
     standings = league_data.get_standings()
     for div, list_of_teams in standings.items():
-        # print(str(div))
         place = 1
         description = ""
         description += "`#    Team".ljust(15) + "W-L-T`\n"
         for team in list_of_teams:
-            # print(str(team))
-            description += "`" + str(place) + ")   " + team.team_abbrev.ljust(5) + " |  {}-{}-{}".format(team.wins,
-                                                                                                         team.losses,
-                                                                                                         team.ties).ljust(
-                9) + "`\n"
+            description += "`" + str(place) + ")   " + team.team_abbrev.ljust(5) + " |  {}-{}-{}".format(team.wins, team.losses, team.ties).ljust(9) + "`\n"
             place += 1
         embed.add_field(name=str(div), value=description, inline=False)
 
@@ -189,14 +187,29 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
     if year is not None:
         if week is not None:
             league_data.set_year(year=year)
-        elif year < 2019:
-            # Build scoreboard for years 2018 and earlier
-            embeds = []
-            embed = discord.Embed(
-                title="Week " + str(week) + " Scoreboard (" + str(league_data.league.year - 1) + "-" + str(
-                    league_data.league.year) + ")")
-            embeds.append(embed)
-            return
+            if year < 2019:
+                # Build scoreboard for years 2018 and earlier
+                embeds = []
+                embed = discord.Embed(title="Week " + str(week) + " Scoreboard (" + str(league_data.league.year - 1) + "-" + str(league_data.league.year) + ")")
+                embeds.append(embed)
+                matchups = league_data.league.scoreboard(matchupPeriod=week)
+
+                for matchup in matchups:
+                    pad_amount = league_data.find_length_of_longest_team_name(matchup=matchup) + 10
+                    embed = discord.Embed(title="")
+                    embed.add_field(name="".ljust(pad_amount,
+                                          "-") + f"\n{matchup.away_team.team_name}:" + f" {int(matchup.away_final_score)}\n",
+                            value=f"**{matchup.away_team.wins}-{matchup.away_team.losses}-{matchup.away_team.ties}**\n\n", inline=False)
+                    embed.add_field(name=f"{matchup.home_team.team_name}:" + f" {int(matchup.home_final_score)}\n",
+                            value=f"**{matchup.home_team.wins}-{matchup.home_team.losses}-{matchup.home_team.ties}**\n**" + "".ljust(pad_amount, "-") + "**", inline=False)
+                    embeds.append(embed)
+
+                # set year back to original year if it was changed
+                if league_data.league.year != original_year:
+                    league_data.set_year(original_year)
+
+                await interaction.response.send_message(embeds=embeds)
+                return
         else:
             await interaction.response.send_message("Provide a week number if going into previous seasons!")
             return
@@ -219,7 +232,6 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
             top_scorer_away = league_data.get_top_scorer(lineup=box_score.away_lineup)
 
             # Top performer field goes off the side on the app :/
-            pad_amount = league_data.find_length_of_longest_team_name(matchup=matchup)
             embed = discord.Embed(title="")
             if len(top_scorer_away.name) > 18:
                 top_scorer_away.name = league_data.shorten_player_name(player_name=top_scorer_away.name)

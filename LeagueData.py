@@ -50,7 +50,7 @@ class LeagueData:
         self.league = League(league_id=self.league.league_id, year=year, espn_s2=os.getenv('ESPN_S2_BBL'),
                              swid=os.getenv('SWID_BBL'))
 
-    def three_weeks_total_as_string(self, week: int):
+    def three_weeks_total_as_string(self, week: int) -> str:
         """Builds and returns a string that is a sorted list of teams and their three week totals"""
         data = self.__get_last_three_weeks_data(week)
         three_weeks_list = self.__build_list_three_weeks_data(data)
@@ -68,7 +68,7 @@ class LeagueData:
         # list of objects
         three_weeks_list = []
 
-        self.__get_list_team_names_for_past_three_weeks(three_weeks_list)
+        self.__get_list_team_abbreviations_for_past_three_weeks(three_weeks_list)
 
         for week in three_weeks_data:
             for i in range(len(three_weeks_data[week])):
@@ -77,9 +77,9 @@ class LeagueData:
                 away_team = matchup.away_team
 
                 for j in range(len(three_weeks_list)):
-                    if home_team.team_name == three_weeks_list[j]['team_name']:
+                    if home_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
                         three_weeks_list[j]['past_three_weeks_total'] += matchup.home_final_score
-                    if away_team.team_name == three_weeks_list[j]['team_name']:
+                    if away_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
                         three_weeks_list[j]['past_three_weeks_total'] += matchup.away_final_score
 
         def sort_three_weeks_list(list: list):
@@ -93,12 +93,21 @@ class LeagueData:
             # print(str(team.team_name))
             list_to_populate.append({'team_name': team.team_name, 'past_three_weeks_total': 0, 'team_object': team})
 
+
+    def __get_list_team_abbreviations_for_past_three_weeks(self, list_to_populate):
+        for team in self.league.teams:
+            list_to_populate.append({'team_abbrev': team.team_abbrev, 'past_three_weeks_total': 0, 'team_object': team})
+
+
     def __report_three_weeks_list(self, three_weeks_list):
         temp = ""
         count = 1
+        temp = "`#   Team".ljust(12) + "3WT`"
+
         for team in three_weeks_list:
-            temp += "\n" + str(count) + ". " + str(team['team_name']) + ": **" + str(
-                int(team['past_three_weeks_total'])) + "**"
+            # temp += "\n" + str(count) + ". " + str(team['team_name']) + ": **" + str(
+            #     int(team['past_three_weeks_total'])) + "**"
+            temp += f"\n`{count})".ljust(6) + f"{team['team_abbrev']}".ljust(7) + f"{int(team['past_three_weeks_total'])}`"
             count += 1
         return temp
 
