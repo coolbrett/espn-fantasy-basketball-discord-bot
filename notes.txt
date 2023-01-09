@@ -1,7 +1,15 @@
 
+PROCESS
+-------
+
+1. Make the bot as feature-rich with stats and helpful commands as possible for your
+    own league
+2. Deploy this bot somewhere and set up automated deployments 
+3. Focus on how to make this a SAAS
+
+
 TO-DO 
 -----
-- Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
 - Add /boxscore command to report player totals for a matchup -- thinking maybe report box score
 - % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
 - injury rate stat
@@ -11,8 +19,10 @@ BEGINNER TASKS
 - Write a command that sends a saying based upon a random number
 - Write a command that sends a message of a list of all the commands LeBot knows
 - Write a basic README file using markdown that has a title, description, and authors listed
+- Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
 
-FUTURE WORK - once the bot is polished and bulletproof
+
+FUTURE WORK - once the bot is polished, bulletproof, and well-designed
 -----------
 - refactor and figure out an initial set up process so that this bot can be used
     for other H2H FBB leagues
@@ -20,6 +30,10 @@ FUTURE WORK - once the bot is polished and bulletproof
 - Add error handling for incorrect parameters for commands
 - deploy the bot somewhere
 - set up github actions for automated deployments
+- Look into adding team logo's on certain commands -- teams have logo url fields
+    There is a branch on the repo called logos -- fetching the pics and sending them
+    through the bot is working, but the logos have weird lines coming off the right
+
 
 NOTES
 -----
@@ -28,3 +42,6 @@ NOTES
     (https://github.com/cwendt94/espn-api/discussions/150)
 
 - the /standings command on NBA Bot shows the limit on mobile
+
+- Once deployed, scaling vertically seems to be the better and cheaper way. 
+    I want to each discord server to have their own instance of the bot 

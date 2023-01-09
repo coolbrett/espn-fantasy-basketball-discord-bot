@@ -38,7 +38,6 @@ async def hey(interaction: discord.Interaction):
 # Would like to add descriptions to parameter but do not know how
 # Don't know if adding the feature of going back into previous seaons is necessary
 async def three_weeks(interaction: discord.Interaction, week: int = None):
-    print("received three-weeks")
     if week is None:
         week = league_data.find_current_week()
     
