@@ -253,6 +253,47 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
 
     await interaction.response.send_message(embeds=embeds)
 
+@bot.command(name="box-score", description="Grab box score for a team in any week or year",
+             guild_ids=[guild_id])
+async def box_score(interaction: discord.Interaction, team_abbreviation: str, week: int = None, year: int = None):
+    #prereq shit
+    original_year = league_data.league.year
+    if year is not None:
+        if week is not None:
+            league_data.set_year(year=year)
+        else:
+            await interaction.response.send_message("Enter a week number if going into previous seasons!")
+            return
+    else:
+        year = original_year
+    
+    if year < 2019:
+        await interaction.response.send_message("Box score cannot be used prior to 2019")
+        return
+    
+    if week is None:
+        week = league_data.find_current_week()
+    
+    
+    #main logic
+    team = league_data.get_team_by_abbreviation(team_abbreviation=team_abbreviation)
+    team_lineup = league_data.get_lineup_for_team(team_id=team.team_id, week=week, year=year)
+    embed = discord.Embed(title=f"Week {week} ({year}) Breakdown")
+    description = "`NAME".ljust(24) + "PTS`\n"
+    
+    #loop and append player name and totals to description
+    for player in team_lineup:
+        name = player.name
+        if len(name) > 18:
+            name = league_data.shorten_player_name(player_name=player.name)
+        description += f"`{name}".ljust(24) + f"{int(player.points)}`\n"
+    embed.add_field(name=f"{team.team_name}", value=description)
+    
+    # set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(original_year)
+
+    await interaction.response.send_message(embed=embed)
 
 @bot.event
 async def on_ready():
