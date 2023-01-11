@@ -14,6 +14,7 @@ def main():
     #get_top_scorer(league_data=league_data)
     #get_box_scores_and_matchups_of_week(league_data=league_data, week=11)
     #league_data.league.scoreboard(matchupPeriod=1)
+    get_list_of_all_players_rostered(league_data=league_data)
     return
 
 def get_standings(league_data: LeagueData) -> dict:
@@ -92,5 +93,23 @@ def get_box_scores_and_matchups_of_week(league_data: LeagueData, week: int) -> l
         #print(str(data))
         return data
         
+def get_list_of_all_players_rostered(league_data: LeagueData) -> list:
+    """Iterates all team rosters and appends all players to a list, then returns a sorted list by season fantasy points total"""
+    #bring in parameter to decide if you sort by total or avg
+    rostered_players = []
+
+    for team in league_data.league.teams:
+        for player in team.roster:
+            rostered_players.append(player)
+    
+    rostered_players.sort(key=lambda player: player.total_points, reverse=True)
+    """
+    count = 1
+    for player in rostered_players:
+        print(f"{count}) {player.name} -- Total: {player.total_points}")
+        count += 1
+    """
+    return rostered_players
+
 
 main()
