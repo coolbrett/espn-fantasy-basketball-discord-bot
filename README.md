@@ -3,9 +3,9 @@
 
  DESCRIPTION
  -----------
-    This Discord bot is built with the pycord library and an espn-api specifically for ESPN fantasy sports
+This Discord bot is built with the pycord library and an espn-api specifically for ESPN fantasy sports
 
-    The goal is to build this bot so that it can handle all Discord servers that is invited to with a single instance of itself
+The goal is to build this bot so that it can handle all Discord servers that is invited to with a single instance of itself
 
 PROCESS
 -------
