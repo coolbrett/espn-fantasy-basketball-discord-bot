@@ -1,3 +1,5 @@
+# ESPN Fantasy Basketball Discord Bot
+ ### Developer: **Brett Dale**
 
 PROCESS
 -------
@@ -10,9 +12,7 @@ PROCESS
 
 TO-DO 
 -----
-- Add /boxscore command to report player totals for a matchup -- thinking maybe report box score
 - % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
-- injury rate stat
 
 BEGINNER TASKS
 --------------
@@ -45,3 +45,5 @@ NOTES
 
 - Once deployed, scaling vertically seems to be the better and cheaper way. 
     I want to each discord server to have their own instance of the bot 
+- Injury rate cannot be done using the espn_api -- the game_played field gets marked to 100 if 
+    they play one game that week, not all
