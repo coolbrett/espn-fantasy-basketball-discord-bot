@@ -197,3 +197,30 @@ class LeagueData:
             num = len(matchup.home_team.team_name)
 
         return num
+    
+    def get_lineup_for_team(self, team_id: int, week: int = None, year: int = None) -> list:
+        #return a sorted list of players by point totals
+        if year is not None:
+            self.set_year(year=year)
+        
+        if week is None:
+            week = self.find_current_week()
+
+        box_scores_of_week = self.league.box_scores(matchup_period=week)
+        
+        for box_score in box_scores_of_week:
+            if box_score.home_team.team_id == team_id:
+                box_score.home_lineup.sort(key=lambda player: player.points, reverse=True)
+                return box_score.home_lineup
+
+            if box_score.away_team.team_id == team_id:
+                box_score.away_lineup.sort(key=lambda player: player.points, reverse=True)
+                return box_score.away_lineup
+
+    def get_team_by_abbreviation(self, team_abbreviation: str) -> Team:
+        print(f"Abbreviation received: {team_abbreviation}")
+        for team in self.league.teams:
+            print(f"loop: {team.team_abbrev}")
+            if team.team_abbrev.casefold() == team_abbreviation.casefold():
+                print(f"Returning: {team.team_name}")
+                return team

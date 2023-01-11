@@ -3,16 +3,22 @@
 
 PROCESS
 -------
-
-1. Make the bot as feature-rich with stats and helpful commands as possible for your
-    own league
+1. Make the bot as feature-rich with stats and helpful commands as possible for YOUR OWN LEAGUE
 2. Deploy this bot somewhere and set up automated deployments 
 3. Focus on how to make this a SAAS
+4. Redesign the bot's structure as you need to when making this work for other league formats
 
 
 TO-DO 
 -----
+<<<<<<< HEAD:README.md
 - % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
+=======
+- Add /boxscore command to report player totals for a team on a given week or year
+- % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
+- injury rate stat
+- Write /setup command to take parameters needed to build a League object
+>>>>>>> 1f4f98292c82760fbe6d3d466f9bc8dc8b4df446:notes.txt
 
 BEGINNER TASKS
 --------------
