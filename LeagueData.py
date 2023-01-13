@@ -218,9 +218,7 @@ class LeagueData:
                 return box_score.away_lineup
 
     def get_team_by_abbreviation(self, team_abbreviation: str) -> Team:
-        print(f"Abbreviation received: {team_abbreviation}")
         for team in self.league.teams:
             print(f"loop: {team.team_abbrev}")
             if team.team_abbrev.casefold() == team_abbreviation.casefold():
-                print(f"Returning: {team.team_name}")
                 return team
