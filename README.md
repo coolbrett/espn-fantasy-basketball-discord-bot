@@ -7,6 +7,8 @@ This Discord bot is built with the pycord library and an espn-api specifically f
 
 The goal is to build this bot so that it can handle all Discord servers that it is invited to with a single instance of itself
 
+I want the bot to be able to display most things that you can find in the app as well as give insights through advanced statistics
+
 PROCESS
 -------
 
@@ -18,13 +20,7 @@ PROCESS
 
 TO-DO 
 -----
-- % of top (league roster size * (half number of teams in league)) players on roster -- avg and totals
-
-BEGINNER TASKS
---------------
-- Write a command that sends a saying based upon a random number
 - Write a command that sends a message of a list of all the commands LeBot knows
-- Write a basic README file using markdown that has a title, description, and authors listed
 - Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
 
 
@@ -49,7 +45,5 @@ NOTES
 
 - the /standings command on NBA Bot shows the limit on mobile
 
-- Once deployed, scaling vertically seems to be the better and cheaper way. 
-    I want to each discord server to have their own instance of the bot 
 - Injury rate cannot be done using the espn_api -- the game_played field gets marked to 100 if 
     they play one game that week, not all

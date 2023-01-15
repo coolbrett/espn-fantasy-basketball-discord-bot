@@ -138,5 +138,4 @@ def get_top_half_percentage_for_each_team(league_data: LeagueData):
     #     percantage = float("%.3f" % percantage)
     #     print(f"{team.team_abbrev}:\t\t{percantage}%")
     # print(f"total: {total}")
-
 main()

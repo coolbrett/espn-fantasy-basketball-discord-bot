@@ -298,19 +298,29 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
 
 @bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a thas", guild_ids=[guild_id])
 async def top_half_players_percentage(interaction: discord.Interaction, year: int = None, stat: str = None):
+    print("received top-half-players-percentage")
+
+    original_year = league_data.league.year
+    if year is not None:
+        league_data.set_year(year=year)
+    
     top_half_players = {}
     if stat == "avg":
         top_half_players = league_data.get_top_half_percentage_for_each_team(stat=stat)
     else:
         top_half_players = league_data.get_top_half_percentage_for_each_team()
     
-    embed = discord.Embed(title=f"Top Half Players of Rostered Players %")
+    embed = discord.Embed(title=f"Top Half of Rostered Players %")
     description = "`TEAM".ljust(8) + "PERC%`\n"
-    for team_id, perc in top_half_players.items():
+    for team_id, percentage in top_half_players.items():
         team = league_data.league.get_team_data(team_id=team_id)
-        perc = float("%.1f" % (perc * 100))
-        description += f"`{team.team_abbrev}".ljust(8) + f"{perc}%`\n"
+        percentage = float("%.1f" % (percentage * 100))
+        description += f"`{team.team_abbrev}".ljust(8) + f"{percentage}%`\n"
     embed.add_field(name="", value=description)
+
+    # set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(original_year)
     
     await interaction.response.send_message(embed=embed)
 
