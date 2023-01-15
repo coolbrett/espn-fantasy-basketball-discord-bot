@@ -103,7 +103,7 @@ def get_list_of_all_players_rostered(league_data: LeagueData) -> list:
         for player in team.roster:
             rostered_players.append(player)
     
-    rostered_players.sort(key=lambda player: player.total_points, reverse=True)
+    rostered_players.sort(key=lambda player: player.avg_points, reverse=True)
     """
     count = 1
     for player in rostered_players:
@@ -122,20 +122,21 @@ def get_top_half_percentage_for_each_team(league_data: LeagueData):
         for team in league_data.league.teams:
             for team_player in team.roster:
                 if team_player.playerId == roster_player.playerId:
+                    #print(f"roster_player: {roster_player.name}\t\t{roster_player.avg_points}")
                     if team.team_id in top_half_player_percentages_by_team.keys():
                         top_half_player_percentages_by_team[team.team_id] += perc
                     else:
                         top_half_player_percentages_by_team.__setitem__(team.team_id, perc)
 
     
-    print("here")
-    total = 0
-    for team_id, perc in top_half_player_percentages_by_team.items():
-        perc = float("%.3f" % perc)
-        total += perc
-        percantage = perc * 100
-        percantage = float("%.3f" % percantage)
-        print(f"{team_id}:\t\t{percantage}%")
-    print(f"total: {total}")
+    # total = 0
+    # for team_id, perc in top_half_player_percentages_by_team.items():
+    #     team = league_data.league.get_team_data(team_id=team_id)
+    #     perc = float("%.3f" % perc)
+    #     total += perc
+    #     percantage = perc * 100
+    #     percantage = float("%.3f" % percantage)
+    #     print(f"{team.team_abbrev}:\t\t{percantage}%")
+    # print(f"total: {total}")
 
 main()

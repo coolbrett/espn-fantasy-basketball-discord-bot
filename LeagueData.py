@@ -11,7 +11,7 @@ dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 """
-Class for the data being built around fantasy league ID and year given
+Class for the data being built around the league ID and year given
 
 @github coolbrett
 """
@@ -95,11 +95,13 @@ class LeagueData:
 
 
     def __get_list_team_abbreviations_for_past_three_weeks(self, list_to_populate):
+        """Helper method to get team abbreviations for past three weeks stat"""
         for team in self.league.teams:
             list_to_populate.append({'team_abbrev': team.team_abbrev, 'past_three_weeks_total': 0, 'team_object': team})
 
 
     def __report_three_weeks_list(self, three_weeks_list):
+        """Helper method to build report for three weeks statd"""
         temp = ""
         count = 1
         temp = "`#   Team".ljust(12) + "3WT`"
@@ -199,6 +201,9 @@ class LeagueData:
         return num
     
     def get_lineup_for_team(self, team_id: int, week: int = None, year: int = None) -> list:
+        """
+        Method to get a team's lineup for a given week and/or year
+        """
         #return a sorted list of players by point totals
         if year is not None:
             self.set_year(year=year)
@@ -218,7 +223,58 @@ class LeagueData:
                 return box_score.away_lineup
 
     def get_team_by_abbreviation(self, team_abbreviation: str) -> Team:
+        """
+        Method to get the Team object by their corresponding team abbreviation
+        """
         for team in self.league.teams:
             print(f"loop: {team.team_abbrev}")
             if team.team_abbrev.casefold() == team_abbreviation.casefold():
                 return team
+    
+    def get_list_of_all_players_rostered(self, stat: str = None) -> list:
+        """
+        Iterates all team rosters and appends all players to a list, 
+        then returns a sorted list by fantasy points either by 
+        avg or total points (determined by stat parameter)
+        """
+        
+        rostered_players = []
+        for team in self.league.teams:
+            for player in team.roster:
+                rostered_players.append(player)
+        
+        #if-else branch here to decide to sort by totals or by avg
+        if stat == "avg":
+            rostered_players.sort(key=lambda player: player.avg_points, reverse=True)
+        else:
+            rostered_players.sort(key=lambda player: player.total_points, reverse=True)
+
+        return rostered_players
+
+    def get_top_half_percentage_for_each_team(self, stat: str = None) -> dict:
+        """
+        Gets all players on a roster as a list, sorted by either total points or average points, and 
+        returns a dictionary with the keys as team_id's and the values as percentage 
+        of players they have on the top half of the list
+        """
+        rostered_players = []
+        if stat == "avg":
+            rostered_players = self.get_list_of_all_players_rostered(stat=stat)
+        else:
+            rostered_players = self.get_list_of_all_players_rostered()
+
+        rostered_players = rostered_players[0:int(len(rostered_players)/2)]
+        top_half_player_percentages_by_team = dict()
+        perc = float(1/len(rostered_players))
+
+        for roster_player in rostered_players:
+            for team in self.league.teams:
+                for team_player in team.roster:
+                    if team_player.playerId == roster_player.playerId:
+                        if team.team_id in top_half_player_percentages_by_team.keys():
+                            top_half_player_percentages_by_team[team.team_id] += perc
+                        else:
+                            top_half_player_percentages_by_team.__setitem__(team.team_id, perc)
+        
+        return top_half_player_percentages_by_team
+

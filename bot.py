@@ -295,6 +295,27 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
 
     await interaction.response.send_message(embed=embed)
 
+
+@bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a thas", guild_ids=[guild_id])
+async def top_half_players_percentage(interaction: discord.Interaction, year: int = None, stat: str = None):
+    top_half_players = {}
+    if stat == "avg":
+        top_half_players = league_data.get_top_half_percentage_for_each_team(stat=stat)
+    else:
+        top_half_players = league_data.get_top_half_percentage_for_each_team()
+    
+    embed = discord.Embed(title=f"Top Half Players of Rostered Players %")
+    description = "`TEAM".ljust(8) + "PERC%`\n"
+    for team_id, perc in top_half_players.items():
+        team = league_data.league.get_team_data(team_id=team_id)
+        perc = float("%.1f" % (perc * 100))
+        description += f"`{team.team_abbrev}".ljust(8) + f"{perc}%`\n"
+    embed.add_field(name="", value=description)
+    
+    await interaction.response.send_message(embed=embed)
+
+
+
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
