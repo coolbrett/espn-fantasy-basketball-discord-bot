@@ -14,7 +14,8 @@ def main():
     #get_top_scorer(league_data=league_data)
     #get_box_scores_and_matchups_of_week(league_data=league_data, week=11)
     #league_data.league.scoreboard(matchupPeriod=1)
-    get_list_of_all_players_rostered(league_data=league_data)
+    #get_list_of_all_players_rostered(league_data=league_data)
+    get_top_half_percentage_for_each_team(league_data=league_data)
     return
 
 def get_standings(league_data: LeagueData) -> dict:
@@ -102,7 +103,7 @@ def get_list_of_all_players_rostered(league_data: LeagueData) -> list:
         for player in team.roster:
             rostered_players.append(player)
     
-    rostered_players.sort(key=lambda player: player.total_points, reverse=True)
+    rostered_players.sort(key=lambda player: player.avg_points, reverse=True)
     """
     count = 1
     for player in rostered_players:
@@ -111,5 +112,30 @@ def get_list_of_all_players_rostered(league_data: LeagueData) -> list:
     """
     return rostered_players
 
+def get_top_half_percentage_for_each_team(league_data: LeagueData):
+    rostered_players = get_list_of_all_players_rostered(league_data=league_data)
+    rostered_players = rostered_players[0:int(len(rostered_players)/2)]
+    top_half_player_percentages_by_team = dict()
+    perc = float(1/len(rostered_players))
 
+    for roster_player in rostered_players:
+        for team in league_data.league.teams:
+            for team_player in team.roster:
+                if team_player.playerId == roster_player.playerId:
+                    #print(f"roster_player: {roster_player.name}\t\t{roster_player.avg_points}")
+                    if team.team_id in top_half_player_percentages_by_team.keys():
+                        top_half_player_percentages_by_team[team.team_id] += perc
+                    else:
+                        top_half_player_percentages_by_team.__setitem__(team.team_id, perc)
+
+    
+    # total = 0
+    # for team_id, perc in top_half_player_percentages_by_team.items():
+    #     team = league_data.league.get_team_data(team_id=team_id)
+    #     perc = float("%.3f" % perc)
+    #     total += perc
+    #     percantage = perc * 100
+    #     percantage = float("%.3f" % percantage)
+    #     print(f"{team.team_abbrev}:\t\t{percantage}%")
+    # print(f"total: {total}")
 main()
