@@ -20,7 +20,6 @@ PROCESS
 
 TO-DO 
 -----
-- Write a command that sends a message of a list of all the commands LeBot knows
 - Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
 - Write setup command that takes all the parameters needed to create a league object
 - Once setup is done, store the guild_id with that information (in a JSON??) so that each server can access their own league
