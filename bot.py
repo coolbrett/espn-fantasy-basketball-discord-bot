@@ -324,7 +324,17 @@ async def top_half_players_percentage(interaction: discord.Interaction, year: in
     
     await interaction.response.send_message(embed=embed)
 
+@bot.command(name="list-commands", description="List all commands", guild_ids=[guild_id])
+async def list_commands(interaction: discord.Interaction):
+    embeds = list()
+    for command in bot.commands:
+        embed = discord.Embed(title=f"/{command.name}")
+        name = f""
+        description = f"{command.description}"
+        embed.add_field(name=f"{name}", value=description)
+        embeds.append(embed)
 
+    await interaction.response.send_message(embeds=embeds)
 
 @bot.event
 async def on_ready():
