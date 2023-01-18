@@ -20,18 +20,18 @@ PROCESS
 
 TO-DO 
 -----
+- Add error handling for incorrect parameters for commands
 - Write setup command that takes all the parameters needed to create a league object
-- Once setup is done, store the guild_id with that information (in a JSON??) so that each server can access their own league
+    - Store this data is a JSON, then look into NoSQL DB in Azure and how to connect it
+- deploy the bot to Azure
+- set up github actions for automated deployments
+- Add new useful and advanced stats
+
 
 
 FUTURE WORK - once the bot is polished, bulletproof, and well-designed
 -----------
-- refactor and figure out an initial set up process so that this bot can be used
-    for other H2H FBB leagues
 - Add roto support??
-- Add error handling for incorrect parameters for commands
-- deploy the bot somewhere
-- set up github actions for automated deployments
 - Look into adding team logo's on certain commands -- teams have logo url fields
     There is a branch on the repo called logos -- fetching the pics and sending them
     through the bot is working, but the logos have weird lines coming off the right
