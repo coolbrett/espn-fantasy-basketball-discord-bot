@@ -1,5 +1,6 @@
 import discord
-from discord.ext import commands as commands
+from discord.ext import commands
+
 from LeagueData import LeagueData
 import os
 from dotenv import load_dotenv
@@ -35,8 +36,7 @@ async def hey(interaction: discord.Interaction):
 @bot.command(name="three-weeks",
              description="Grabs three week totals for each team from the week number given and sends a sorted list",
              guild_ids=[guild_id])
-# Would like to add descriptions to parameter but do not know how
-# Don't know if adding the feature of going back into previous seaons is necessary
+@discord.option(name="week", description="Ex: 5 will get totals from weeks 3, 4, and 5")
 async def three_weeks(interaction: discord.Interaction, week: int = None):
     if week is None:
         week = league_data.find_current_week()
@@ -47,6 +47,7 @@ async def three_weeks(interaction: discord.Interaction, week: int = None):
 
 
 @bot.command(name="standings", description="Current Standings for Fantasy League", guild_ids=[guild_id])
+@discord.option(name="year", description="Year to get data from (current year is default)")
 async def standings(interaction: discord.Interaction, year: int = None):
     original_year = league_data.league.year
     if year != None:
@@ -71,6 +72,8 @@ async def standings(interaction: discord.Interaction, year: int = None):
 
 
 @bot.command(name="draft-recap", description="Get Draft Recap from current or previous season", guild_ids=[guild_id])
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
+@discord.option(name="round", description="Specific round to get (gets all rounds by default)")
 async def draft_recap(interaction: discord.Interaction, year: int = None, round: int = None):
     original_year = league_data.league.year
     if year is not None:
@@ -121,6 +124,7 @@ async def draft_recap(interaction: discord.Interaction, year: int = None, round:
 @bot.command(name="abbreviations",
              description="Gets all abbreviations of teams in the league and their corresponding team name",
              guild_ids=[guild_id])
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def abbreviations(interaction: discord.Interaction, year: int = None):
     original_year = league_data.league.year
     if year is not None:
@@ -143,6 +147,7 @@ async def abbreviations(interaction: discord.Interaction, year: int = None):
 
 
 @bot.command(name="history", description="Gets Final Standings of the league of the year given", guild_ids=[guild_id])
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def history(interaction: discord.Interaction, year: int):
     original_year = league_data.league.year
 
@@ -178,6 +183,8 @@ async def history(interaction: discord.Interaction, year: int):
 
 @bot.command(name="scoreboard", description="Grab scoreboard from current week or provide a week number",
              guild_ids=[guild_id])
+@discord.option(name="week", description="Week to get data from")
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def scoreboard(interaction: discord.Interaction, week: int = None, year: int = None):
     # scoreboard is unable to get playoff matchups
     # Box scores cannot be used before 2019, so command breaks when going to 2018 or earlier
@@ -255,6 +262,9 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
 
 @bot.command(name="box-score", description="Grab box score for a team in any week or year",
              guild_ids=[guild_id])
+@discord.option(name="team_abbreviation", description="Abbreviation of Team you want box score of")
+@discord.option(name="week", description="Week to get data from")
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def box_score(interaction: discord.Interaction, team_abbreviation: str, week: int = None, year: int = None):
     #prereq shit
     original_year = league_data.league.year
@@ -297,6 +307,8 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
 
 
 @bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a thas", guild_ids=[guild_id])
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
+@discord.option(name="stat", description="type 'avg' to sort players by average, leave blank for totals")
 async def top_half_players_percentage(interaction: discord.Interaction, year: int = None, stat: str = None):
     print("received top-half-players-percentage")
 

@@ -20,7 +20,6 @@ PROCESS
 
 TO-DO 
 -----
-- Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
 - Write setup command that takes all the parameters needed to create a league object
 - Once setup is done, store the guild_id with that information (in a JSON??) so that each server can access their own league
 
@@ -48,3 +47,5 @@ NOTES
 
 - Injury rate cannot be done using the espn_api -- the game_played field gets marked to 100 if 
     they play one game that week, not all
+
+- Add descriptions to parameters of commands (https://github.com/Pycord-Development/pycord/discussions/1861)
