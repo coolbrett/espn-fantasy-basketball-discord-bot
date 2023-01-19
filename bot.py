@@ -350,11 +350,18 @@ async def list_commands(interaction: discord.Interaction):
 
 @bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=[guild_id])
 async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
+    original_year = league_data.league.year
     embed = discord.Embed(title=f"Record vs. All Teams")
     #each team ID gets a string W-L-T
     if year is None:
         year = league_data.league.year
+    
     data = league_data.get_record_vs_all_teams(year=year)
+
+
+    # set year back to original year if it was changed
+    if league_data.league.year != original_year:
+        league_data.set_year(original_year)
 
     await interaction.response.send_message(embed=embed)
 
