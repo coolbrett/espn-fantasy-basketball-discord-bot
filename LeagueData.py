@@ -278,7 +278,7 @@ class LeagueData:
         
         return top_half_player_percentages_by_team
 
-    def get_record_vs_all_teams(self, year: int) -> dict:
+    def get_record_vs_all_teams(self) -> dict:
         """
         Get each team's record if they played all teams every week
         """
@@ -330,4 +330,12 @@ class LeagueData:
         records = dict(sorted(records.items(), key=lambda team: team[1]['wins'], reverse=True))
         return records
 
+    def get_win_percentage(self, wins: int, losses: int, ties: int) -> float:
+        """
+        Calculates win percentage based upon parameters given, and returns the percentage to the tens place
+
+        Ex: Win percentage: 66.6666% -> Value Returned: 66.66%
+        """
+        win_percentage = (wins + (ties / 2)) / (wins + losses + ties)
+        return float("{:.2}".format(win_percentage))
   
