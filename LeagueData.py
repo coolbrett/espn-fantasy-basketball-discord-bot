@@ -278,3 +278,52 @@ class LeagueData:
         
         return top_half_player_percentages_by_team
 
+    def get_record_vs_all_teams(self, year: int) -> dict:
+        """
+        Get each team's record if they played all teams every week
+        """
+        #does not support year parameter yet
+        records = dict()
+        num_of_weeks = self.find_current_week()
+        full_weeks = num_of_weeks - 1
+        if full_weeks is not 0:
+            week = 1
+            while week < num_of_weeks:
+                data = dict()
+                #get dict with keys as team_id and values as score for the week
+                box_scores = self.league.box_scores(matchup_period=week)
+                for box_score in box_scores:
+                    #this doesn't work
+                    data.__setitem__('team_id', box_score.away_team.team_id)
+                    data.__setitem__('score', box_score.away_score)
+                    data.__setitem__('team_id', box_score.home_team.team_id)
+                    data.__setitem__('score', box_score.home_score)
+
+                #do W-L-T here
+                #
+                sorted(data.items(), key=lambda team: team.score, reverse=True)
+                list_of_scores = list()
+                previous_team_id: int
+                wins = len(self.league.teams) - 1
+                losses = 0
+                for team_id, score in data.items():
+                    if list_of_scores.count(score) is 0:
+                        list_of_scores.append(score)
+                    else:
+                        records[previous_team_id].ties += 1
+                        records[team_id].ties += 1
+                        continue
+
+                    if records[team_id] in records:
+                        records[team_id].wins += wins
+                        records[team_id].losses += losses
+                    else:
+                        records.__setitem__(team_id, {'wins': wins, 'losses': losses, 'ties': 0})
+                    
+                    previous_team_id = team_id
+                    wins -= 1
+                    losses += 1
+                    week += 1
+        return records
+
+  

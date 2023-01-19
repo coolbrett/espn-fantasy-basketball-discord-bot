@@ -348,6 +348,17 @@ async def list_commands(interaction: discord.Interaction):
 
     await interaction.response.send_message(embeds=embeds)
 
+@bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=[guild_id])
+async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
+    embed = discord.Embed(title=f"Record vs. All Teams")
+    #each team ID gets a string W-L-T
+    if year is None:
+        year = league_data.league.year
+    data = league_data.get_record_vs_all_teams(year=year)
+
+    await interaction.response.send_message(embed=embed)
+
+
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
