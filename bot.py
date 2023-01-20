@@ -382,6 +382,20 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     
     await interaction.followup.send(embed=embed)
 
+@bot.command(name="setup", description="Provide ESPN Fantasy Basketball League information", guild_ids=[guild_id])
+async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s2: str = None, swid: str = None):
+    #find out all required and optional parameters
+    #store this information under a league_id or guild_id
+    new_league_object_info = dict()
+    public = True
+    if espn_s2 != None and swid != None:
+        new_league_object_info.__setitem__(str(interaction.message.guild.id), {'guild_id': str(interaction.message.guild.id), 'fantasy_league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
+        public = False
+    else:
+        new_league_object_info.__setitem__(str(interaction.message.guild.id), {'guild_id': str(interaction.message.guild.id), 'fantasy_league_id': str(fantasy_league_id)})
+    return
+
+
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')

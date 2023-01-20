@@ -20,9 +20,9 @@ PROCESS
 
 TO-DO 
 -----
-- Add error handling for incorrect parameters for commands
 - Write setup command that takes all the parameters needed to create a league object
     - Store this data is a JSON, then look into NoSQL DB in Azure and how to connect it
+- Write /help-private-leagues command to give instructions on how to get espn_s2 and swid
 - deploy the bot to Azure
 - set up github actions for automated deployments
 - Add new useful and advanced stats
