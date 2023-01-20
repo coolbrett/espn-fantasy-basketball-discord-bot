@@ -291,6 +291,7 @@ class LeagueData:
             while week < num_of_weeks:
                 data = dict()
                 #get dict with keys as team_id and values as score for the week
+                #print(f"Week: {week}")
                 box_scores = self.league.box_scores(matchup_period=week)
                 for box_score in box_scores:
                     data.__setitem__(box_score.away_team.team_id, box_score.away_score)
@@ -310,11 +311,15 @@ class LeagueData:
                     wins = num_of_teams - 2
                 losses = 0
                 for team_id, score in data.items():
+                    if score == 0:
+                        continue
+                    #print(f"{team_id}: {score}")
                     if list_of_scores.count(score) == 0:
                         list_of_scores.append(score)
                     else:
-                        records[previous_team_id].ties += 1
-                        records[team_id].ties += 1
+                        records[previous_team_id]['ties'] += 1
+                        records[team_id]['ties'] += 1
+                        previous_team_id = team_id
                         continue
 
                     if team_id in records:
@@ -327,15 +332,16 @@ class LeagueData:
                     wins -= 1
                     losses += 1
                 week += 1
+                #print("".ljust(20, '-'))
         records = dict(sorted(records.items(), key=lambda team: team[1]['wins'], reverse=True))
         return records
 
-    def get_win_percentage(self, wins: int, losses: int, ties: int) -> float:
+    def get_win_percentage(self, wins: int, losses: int, ties: int) -> str:
         """
         Calculates win percentage based upon parameters given, and returns the percentage to the tens place
 
         Ex: Win percentage: 66.6666% -> Value Returned: 66.66%
         """
-        win_percentage = (wins + (ties / 2)) / (wins + losses + ties)
-        return float("{:.2}".format(win_percentage))
+        win_percentage = (wins + (ties / 2)) / (wins + losses + ties) * 100
+        return str(round(win_percentage, 2))
   

@@ -351,30 +351,36 @@ async def list_commands(interaction: discord.Interaction):
 @bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=[guild_id])
 async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
     print("received record-vs-all-teams")
+    
+    if year < 2019:
+        await interaction.response.send_message("Box scores are unavailable prior to 2019")
+        return
+        
     original_year = league_data.league.year
+    if year is not None:
+        league_data.set_year(year=year)
+
     embed = discord.Embed(title=f"Record vs. All Teams")
     #each team ID gets a string W-L-T
     if year is None:
         year = league_data.league.year
-    print("before get record")
+    await interaction.response.defer()
     data = league_data.get_record_vs_all_teams()
-    print("after get record")
-    name = "TEAM".ljust(8) + "RECORD".ljust(12) + "PERC%"
+    name = "`TEAM".ljust(8) + "RECORD".ljust(12) + "PERC%`"
     description = ""
     for team_id, record in data.items():
         team = league_data.league.get_team_data(team_id=team_id)
-        description += f"{team.team_abbrev}".ljust(8) + f"{record['wins']}-{record['losses']}-{record['ties']}".ljust(12)
+        description += f"`{team.team_abbrev}".ljust(8) + f"{record['wins']}-{record['losses']}-{record['ties']}".ljust(12)
         win_percentage = league_data.get_win_percentage(wins=record['wins'], losses=record['losses'], ties=record['ties'])
-        description += f"{win_percentage}\n"
+        description += f"{win_percentage}`\n"
     embed.add_field(name=name, value=description)
 
 
     # set year back to original year if it was changed
     if league_data.league.year != original_year:
         league_data.set_year(original_year)
-
-    await interaction.response.send_message(embed=embed)
-
+    
+    await interaction.followup.send(embed=embed)
 
 @bot.event
 async def on_ready():
