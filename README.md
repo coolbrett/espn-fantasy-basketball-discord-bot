@@ -20,7 +20,6 @@ PROCESS
 
 TO-DO 
 -----
-- Add stat for if everyone played each other every week
 - Add error handling for incorrect parameters for commands
 - Write setup command that takes all the parameters needed to create a league object
     - Store this data is a JSON, then look into NoSQL DB in Azure and how to connect it
