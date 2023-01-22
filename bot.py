@@ -5,6 +5,7 @@ from LeagueData import LeagueData
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+import json
 
 """
 This is the main file of the discord bot. All commands are being written here.
@@ -384,15 +385,25 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
 
 @bot.command(name="setup", description="Provide ESPN Fantasy Basketball League information", guild_ids=[guild_id])
 async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s2: str = None, swid: str = None):
-    #find out all required and optional parameters
-    #store this information under a league_id or guild_id
+    #store this information where guild_id is key, and value is object containing guild_id and league credentials
     new_league_object_info = dict()
-    public = True
+    guild_id = interaction.guild_id
+
+    #add league info to dict
     if espn_s2 != None and swid != None:
-        new_league_object_info.__setitem__(str(interaction.message.guild.id), {'guild_id': str(interaction.message.guild.id), 'fantasy_league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
-        public = False
+        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'fantasy_league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
     else:
-        new_league_object_info.__setitem__(str(interaction.message.guild.id), {'guild_id': str(interaction.message.guild.id), 'fantasy_league_id': str(fantasy_league_id)})
+        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'fantasy_league_id': str(fantasy_league_id)})
+    
+    #load json into dict, and use update to set new info or overwrite existing data
+    data = dict()
+    with open('fantasy_leagues.json') as json_file:
+        data = json.load(json_file)
+        data.update(new_league_object_info)
+        print(f"{new_league_object_info}")
+
+    with open('fantasy_leagues.json', 'w') as json_file:
+        json.dump(data, json_file, separators=(',\n', '\n'))
     return
 
 

@@ -19,11 +19,12 @@ Class for the data being built around the league ID and year given
 
 class LeagueData:
 
-    # this constructor needs to be refactored to account for s2 and SWID being optional
-    def __init__(self, league_id: int, year: int):
+    def __init__(self, league_id: int, year: int, espn_s2: str = None, swid: str = None):
         """LeagueData holds data about the FBB League"""
-        self.league = League(league_id=league_id, year=year, espn_s2=os.getenv('ESPN_S2_BBL'),
-                             swid=os.getenv('SWID_BBL'))
+        if espn_s2 != None and swid != None:
+            self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+        else:
+            self.league = League(league_id=league_id, year=year)
 
     def find_current_week(self):
         """The ESPN API being used doesn't keep track of the current week in the fantasy year it is, 
@@ -40,10 +41,12 @@ class LeagueData:
         else:
             return other
 
-    def set_league(self, league_id: int, year: int):
-        """Gives ability to change leagues - ONLY WORKS FOR BBL"""
-        self.league = League(league_id=league_id, year=year, espn_s2=os.getenv('ESPN_S2_BBL'),
-                             swid=os.getenv('SWID_BBL'))
+    def set_league(self, league_id: int, year: int, espn_s2: str = None, swid: str = None):
+        """Gives ability to change leagues"""
+        if espn_s2 != None and swid != None:
+            self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+        else:
+            self.league = League(league_id=league_id, year=year)
 
     def set_year(self, year: int):
         """Set league year to a different year - ONLY WORKS FOR BBL"""
