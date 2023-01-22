@@ -25,18 +25,26 @@ bot.intents.all()
 # This is where the data being used in commands is built
 league_data = LeagueData(int(os.getenv('LEAGUE_ID_BBL')), 2023)
 
+#get all guild_id's and their data
+data = dict()
+with open('fantasy_leagues.json') as json_file:
+    data = json.load(json_file)
+    
 # get guild ID by right-clicking on server icon then hit Copy ID
-guild_id = os.getenv('GUILD_ID_BBL')
+guild_ids = []
+for key in data.keys():
+    guild_ids.append(key)
+print(guild_ids)
 
 
-@bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=[guild_id])
+@bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=guild_ids)
 async def hey(interaction: discord.Interaction):
     await interaction.response.send_message("Hello!")
 
 
 @bot.command(name="three-weeks",
              description="Grabs three week totals for each team from the week number given and sends a sorted list",
-             guild_ids=[guild_id])
+             guild_ids=guild_ids)
 @discord.option(name="week", description="Ex: 5 will get totals from weeks 3, 4, and 5")
 async def three_weeks(interaction: discord.Interaction, week: int = None):
     if week is None:
@@ -47,7 +55,7 @@ async def three_weeks(interaction: discord.Interaction, week: int = None):
     await interaction.response.send_message(embed=embed)
 
 
-@bot.command(name="standings", description="Current Standings for Fantasy League", guild_ids=[guild_id])
+@bot.command(name="standings", description="Current Standings for Fantasy League", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (current year is default)")
 async def standings(interaction: discord.Interaction, year: int = None):
     original_year = league_data.league.year
@@ -72,7 +80,7 @@ async def standings(interaction: discord.Interaction, year: int = None):
     await interaction.response.send_message(embed=embed)
 
 
-@bot.command(name="draft-recap", description="Get Draft Recap from current or previous season", guild_ids=[guild_id])
+@bot.command(name="draft-recap", description="Get Draft Recap from current or previous season", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 @discord.option(name="round", description="Specific round to get (gets all rounds by default)")
 async def draft_recap(interaction: discord.Interaction, year: int = None, round: int = None):
@@ -124,7 +132,7 @@ async def draft_recap(interaction: discord.Interaction, year: int = None, round:
 
 @bot.command(name="abbreviations",
              description="Gets all abbreviations of teams in the league and their corresponding team name",
-             guild_ids=[guild_id])
+             guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def abbreviations(interaction: discord.Interaction, year: int = None):
     original_year = league_data.league.year
@@ -147,7 +155,7 @@ async def abbreviations(interaction: discord.Interaction, year: int = None):
     await interaction.response.send_message(embed=embed)
 
 
-@bot.command(name="history", description="Gets Final Standings of the league of the year given", guild_ids=[guild_id])
+@bot.command(name="history", description="Gets Final Standings of the league of the year given", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def history(interaction: discord.Interaction, year: int):
     original_year = league_data.league.year
@@ -183,7 +191,7 @@ async def history(interaction: discord.Interaction, year: int):
 
 
 @bot.command(name="scoreboard", description="Grab scoreboard from current week or provide a week number",
-             guild_ids=[guild_id])
+             guild_ids=guild_ids)
 @discord.option(name="week", description="Week to get data from")
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def scoreboard(interaction: discord.Interaction, week: int = None, year: int = None):
@@ -262,7 +270,7 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
     await interaction.response.send_message(embeds=embeds)
 
 @bot.command(name="box-score", description="Grab box score for a team in any week or year",
-             guild_ids=[guild_id])
+             guild_ids=guild_ids)
 @discord.option(name="team_abbreviation", description="Abbreviation of Team you want box score of")
 @discord.option(name="week", description="Week to get data from")
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
@@ -307,7 +315,7 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
     await interaction.response.send_message(embed=embed)
 
 
-@bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a thas", guild_ids=[guild_id])
+@bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a thas", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 @discord.option(name="stat", description="type 'avg' to sort players by average, leave blank for totals")
 async def top_half_players_percentage(interaction: discord.Interaction, year: int = None, stat: str = None):
@@ -337,7 +345,7 @@ async def top_half_players_percentage(interaction: discord.Interaction, year: in
     
     await interaction.response.send_message(embed=embed)
 
-@bot.command(name="list-commands", description="List all commands", guild_ids=[guild_id])
+@bot.command(name="list-commands", description="List all commands", guild_ids=guild_ids)
 async def list_commands(interaction: discord.Interaction):
     embeds = list()
     for command in bot.commands:
@@ -349,7 +357,7 @@ async def list_commands(interaction: discord.Interaction):
 
     await interaction.response.send_message(embeds=embeds)
 
-@bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=[guild_id])
+@bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=guild_ids)
 async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
     print("received record-vs-all-teams")
     
@@ -383,7 +391,7 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     
     await interaction.followup.send(embed=embed)
 
-@bot.command(name="setup", description="Provide ESPN Fantasy Basketball League information", guild_ids=[guild_id])
+@bot.command(name="setup", description="Provide ESPN Fantasy Basketball League information", guild_ids=guild_ids)
 async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s2: str = None, swid: str = None):
     #store this information where guild_id is key, and value is object containing guild_id and league credentials
     new_league_object_info = dict()
