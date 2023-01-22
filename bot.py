@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 import json
+import espn_api
 
 """
 This is the main file of the discord bot. All commands are being written here.
@@ -23,18 +24,23 @@ bot = discord.Bot()
 bot.intents.all()
 
 # This is where the data being used in commands is built
-league_data = LeagueData(int(os.getenv('LEAGUE_ID_BBL')), 2023)
+#league_data = LeagueData(int(os.getenv('LEAGUE_ID_BBL')), 2023)
+league_data: any
 
-#get all guild_id's and their data
-data = dict()
-with open('fantasy_leagues.json') as json_file:
-    data = json.load(json_file)
-    
 # get guild ID by right-clicking on server icon then hit Copy ID
-guild_ids = []
-for key in data.keys():
-    guild_ids.append(key)
-print(guild_ids)
+def __build_list_of_guild_ids():
+    #get all guild_id's and their data
+    data = dict()
+    with open('fantasy_leagues.json') as json_file:
+        data = json.load(json_file)
+    
+    temp = []
+    for key in data.keys():
+        temp.append(key)
+    return temp
+
+#get all guild_id's
+guild_ids = __build_list_of_guild_ids()
 
 
 @bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=guild_ids)
@@ -358,6 +364,7 @@ async def list_commands(interaction: discord.Interaction):
     await interaction.response.send_message(embeds=embeds)
 
 @bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=guild_ids)
+@discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
     print("received record-vs-all-teams")
     
@@ -392,6 +399,9 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     await interaction.followup.send(embed=embed)
 
 @bot.command(name="setup", description="Provide ESPN Fantasy Basketball League information", guild_ids=guild_ids)
+@discord.option(name="fantasy_league_id", description="Fantasy League ID -> use /help-setup for more information")
+@discord.option(name="espn_s2", description="Only needed for private leagues -> use /help-setup-private for more information")
+@discord.option(name="swid", description="Only needed for private leagues -> use /help-private for more information")
 async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s2: str = None, swid: str = None):
     #store this information where guild_id is key, and value is object containing guild_id and league credentials
     new_league_object_info = dict()
@@ -414,6 +424,34 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
         json.dump(data, json_file, separators=(',\n', '\n'))
     return
 
+
+#this runs code upon every command received
+@bot.event
+async def on_application_command(context):
+    #load league data through guild_id in context
+    if str(context.guild_id) in guild_ids:
+        data = dict()
+        with open('fantasy_leagues.json') as json_file:
+            data = json.load(json_file)
+        guild_id_as_string = str(context.guild_id)
+        league_id = data[guild_id_as_string]['fantasy_league_id']
+        
+        #create league with and without private credentials
+        if 'espn_s2' in data[guild_id_as_string] and 'swid' in data[guild_id_as_string]:
+            print("has private creds")
+            espn_s2 = data[guild_id_as_string]['espn_s2']
+            swid = data[guild_id_as_string]['swid']
+        else:
+            try:
+                league_data = LeagueData(league_id=int(league_id), year=2023)
+                print('league made')
+            except espn_api.requests.espn_requests.ESPNInvalidLeague:
+                #send message back saying to use /setup command
+                await context.send("The league ID given does not exist! Use /setup to use commands")
+
+@bot.event
+async def on_application_command_error(context):
+    pass
 
 @bot.event
 async def on_ready():
