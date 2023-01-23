@@ -45,6 +45,7 @@ guild_ids = __build_list_of_guild_ids()
 
 @bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=guild_ids)
 async def hey(interaction: discord.Interaction):
+    #print(str(league_data))
     await interaction.response.send_message("Hello!")
 
 
@@ -418,10 +419,11 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
     with open('fantasy_leagues.json') as json_file:
         data = json.load(json_file)
         data.update(new_league_object_info)
-        print(f"{new_league_object_info}")
+        print(f"in setup\n{new_league_object_info}")
 
     with open('fantasy_leagues.json', 'w') as json_file:
-        json.dump(data, json_file, separators=(',\n', '\n'))
+        print(f"data dumped: {data}")
+        json.dump(data, json_file)
     return
 
 
@@ -439,19 +441,35 @@ async def on_application_command(context):
         #create league with and without private credentials
         if 'espn_s2' in data[guild_id_as_string] and 'swid' in data[guild_id_as_string]:
             print("has private creds")
-            espn_s2 = data[guild_id_as_string]['espn_s2']
-            swid = data[guild_id_as_string]['swid']
+            # espn_s2 = data[guild_id_as_string]['espn_s2']
+            # temp = {'espn_s2': data[guild_id_as_string]['espn_s2']}
+            # data.update(temp)
+            # swid = data[guild_id_as_string]['swid']
+            # temp = {'swid': data[guild_id_as_string]['swid']}
+            # data.update(temp)
+
+
+            league_data = LeagueData(league_id=int(league_id), year=2023, espn_s2=espn_s2, swid=swid)
+            print('league made')
+            print(str(league_data))
         else:
-            try:
-                league_data = LeagueData(league_id=int(league_id), year=2023)
-                print('league made')
-            except espn_api.requests.espn_requests.ESPNInvalidLeague:
-                #send message back saying to use /setup command
-                await context.send("The league ID given does not exist! Use /setup to use commands")
+            league_data = LeagueData(league_id=int(league_id), year=2023)
+            print('league made')
+            print(str(league_data))
 
 @bot.event
-async def on_application_command_error(context):
-    pass
+async def on_application_command_error(context: discord.ApplicationContext, error):
+    print("In app command error")
+    if isinstance(error.original, NameError):
+        print(str(error.original))
+        await context.interaction.response.send_message("Your league has not been setup yet, or the credentials given are invalid. Use `/setup` to configure your league.")
+    
+    if isinstance(error, espn_api.requests.espn_requests.ESPNInvalidLeague):
+        #this may never happen because this error happens in LeagueData
+        await context.interaction.response.send_message("League credentials do not match any leagues on ESPN. Re-run /setup with correct credentials.")
+
+
+
 
 @bot.event
 async def on_ready():

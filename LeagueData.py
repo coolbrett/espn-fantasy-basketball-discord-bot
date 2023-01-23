@@ -4,6 +4,7 @@ from espn_api.basketball import box_player, box_score
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+import espn_api
 
 # All sensitive data needs to be held and imported in the .env file
 # the .env has to be loaded first before being used
@@ -21,10 +22,13 @@ class LeagueData:
 
     def __init__(self, league_id: int, year: int, espn_s2: str = None, swid: str = None):
         """LeagueData holds data about the FBB League"""
-        if espn_s2 != None and swid != None:
-            self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
-        else:
-            self.league = League(league_id=league_id, year=year)
+        try:
+            if espn_s2 != None and swid != None:
+                self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+            else:
+                self.league = League(league_id=league_id, year=year)
+        except espn_api.requests.espn_requests.ESPNInvalidLeague:
+            print("League credentials passed are not valid")
 
     def find_current_week(self):
         """The ESPN API being used doesn't keep track of the current week in the fantasy year it is, 
