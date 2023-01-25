@@ -25,7 +25,7 @@ bot.intents.all()
 
 # This is where the data being used in commands is built
 #league_data = LeagueData(int(os.getenv('LEAGUE_ID_BBL')), 2023)
-league_data: any
+league_data = 0
 
 # get guild ID by right-clicking on server icon then hit Copy ID
 def __build_list_of_guild_ids():
@@ -43,9 +43,39 @@ def __build_list_of_guild_ids():
 guild_ids = __build_list_of_guild_ids()
 
 
+#this runs code upon every command received
+@bot.before_invoke
+async def set_league_data(context):
+    global league_data
+    #load league data through guild_id in context
+    if str(context.guild_id) in guild_ids:
+        data = dict()
+        with open('fantasy_leagues.json') as json_file:
+            data = json.load(json_file)
+        guild_id_as_string = str(context.guild_id)
+        league_id = data[guild_id_as_string]['fantasy_league_id']
+        
+        #create league with and without private credentials
+        if 'espn_s2' in data[guild_id_as_string] and 'swid' in data[guild_id_as_string]:
+            print("has private creds")
+            espn_s2 = data[guild_id_as_string]['espn_s2']
+            # temp = {'espn_s2': data[guild_id_as_string]['espn_s2']}
+            # data.update(temp)
+            # swid = data[guild_id_as_string]['swid']
+            swid = {'swid': data[guild_id_as_string]['swid']}
+            # data.update(temp)
+
+            league_data = LeagueData(league_id=int(league_id), year=2023, espn_s2=espn_s2, swid=swid)
+            print('league made PRIVATE')
+            print(str(league_data))
+        else:
+            league_data = LeagueData(league_id=int(league_id), year=2023)
+            print('league made')
+            print(str(league_data.league.league_id))
+
+
 @bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=guild_ids)
 async def hey(interaction: discord.Interaction):
-    #print(str(league_data))
     await interaction.response.send_message("Hello!")
 
 
@@ -54,6 +84,7 @@ async def hey(interaction: discord.Interaction):
              guild_ids=guild_ids)
 @discord.option(name="week", description="Ex: 5 will get totals from weeks 3, 4, and 5")
 async def three_weeks(interaction: discord.Interaction, week: int = None):
+    print(league_data)
     if week is None:
         week = league_data.find_current_week()
     
@@ -425,37 +456,6 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
         print(f"data dumped: {data}")
         json.dump(data, json_file)
     return
-
-
-#this runs code upon every command received
-@bot.event
-async def on_application_command(context):
-    #load league data through guild_id in context
-    if str(context.guild_id) in guild_ids:
-        data = dict()
-        with open('fantasy_leagues.json') as json_file:
-            data = json.load(json_file)
-        guild_id_as_string = str(context.guild_id)
-        league_id = data[guild_id_as_string]['fantasy_league_id']
-        
-        #create league with and without private credentials
-        if 'espn_s2' in data[guild_id_as_string] and 'swid' in data[guild_id_as_string]:
-            print("has private creds")
-            # espn_s2 = data[guild_id_as_string]['espn_s2']
-            # temp = {'espn_s2': data[guild_id_as_string]['espn_s2']}
-            # data.update(temp)
-            # swid = data[guild_id_as_string]['swid']
-            # temp = {'swid': data[guild_id_as_string]['swid']}
-            # data.update(temp)
-
-
-            league_data = LeagueData(league_id=int(league_id), year=2023, espn_s2=espn_s2, swid=swid)
-            print('league made')
-            print(str(league_data))
-        else:
-            league_data = LeagueData(league_id=int(league_id), year=2023)
-            print('league made')
-            print(str(league_data))
 
 @bot.event
 async def on_application_command_error(context: discord.ApplicationContext, error):
