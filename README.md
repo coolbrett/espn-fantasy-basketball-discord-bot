@@ -21,10 +21,11 @@ PROCESS
 TO-DO 
 -----
 - Write setup command that takes all the parameters needed to create a league object
-    - Store this data is a JSON, then look into NoSQL DB in Azure and how to connect it
+    - Store this data is a JSON, then look into SQL DB and how to connect it
     - Write descriptions for new setup command parameters
     - All commands now need to load the league associated with their guild_id
     - Write /help-private-leagues command to give instructions on how to get espn_s2 and swid
+- Try and make the commands uniform -- scoreboard kind of sucks
 - deploy the bot to Azure
 - set up github actions for automated deployments
 - Add new useful and advanced stats

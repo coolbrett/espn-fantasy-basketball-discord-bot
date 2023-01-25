@@ -22,13 +22,10 @@ class LeagueData:
 
     def __init__(self, league_id: int, year: int, espn_s2: str = None, swid: str = None):
         """LeagueData holds data about the FBB League"""
-        try:
-            if espn_s2 != None and swid != None:
-                self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
-            else:
-                self.league = League(league_id=league_id, year=year)
-        except espn_api.requests.espn_requests.ESPNInvalidLeague:
-            print("League credentials passed are not valid")
+        if espn_s2 != None and swid != None:
+            self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+        else:
+            self.league = League(league_id=league_id, year=year)
 
     def find_current_week(self):
         """The ESPN API being used doesn't keep track of the current week in the fantasy year it is, 
@@ -234,7 +231,6 @@ class LeagueData:
         Method to get the Team object by their corresponding team abbreviation
         """
         for team in self.league.teams:
-            print(f"loop: {team.team_abbrev}")
             if team.team_abbrev.casefold() == team_abbreviation.casefold():
                 return team
     
