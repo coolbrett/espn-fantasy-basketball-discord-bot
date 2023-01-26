@@ -11,7 +11,6 @@ I want the bot to be able to display most things that you can find in the app as
 
 PROCESS
 -------
-
 1. Make the bot as feature-rich with stats and helpful commands as possible for your
     own league
 2. Deploy this bot somewhere and set up automated deployments 
@@ -21,11 +20,11 @@ PROCESS
 TO-DO 
 -----
 - Write setup command that takes all the parameters needed to create a league object
-    - Store this data is a JSON, then look into SQL DB and how to connect it
-    - Write descriptions for new setup command parameters
-    - All commands now need to load the league associated with their guild_id
-    - Write /help-private-leagues command to give instructions on how to get espn_s2 and swid
-- Try and make the commands uniform -- scoreboard kind of sucks
+    - Store this data is a JSON, then look into NoSQL DB and how to connect it
+    - Chose Firebase -- setup docs here -> https://firebase.google.com/docs/firestore/quickstart?authuser=0#python
+    - Once DB connected, figure out how to update and pull data directly from DB
+- Try and make the commands uniform -- scoreboard kind of sucks, get rid of '|'across commands if possible
+- Add logging?
 - deploy the bot to Azure
 - set up github actions for automated deployments
 - Add new useful and advanced stats

@@ -285,7 +285,7 @@ class LeagueData:
         """
         Get each team's record if they played all teams every week
         """
-        #does not support year parameter yet
+        #DOES NOT WORK WITH YEARS THAT HAVE BYE WEEKS
         records = dict()
         num_of_weeks = self.find_current_week()
         full_weeks = num_of_weeks - 1
@@ -294,7 +294,7 @@ class LeagueData:
             while week < num_of_weeks:
                 data = dict()
                 #get dict with keys as team_id and values as score for the week
-                #print(f"Week: {week}")
+                #bye week team object is set to 0
                 box_scores = self.league.box_scores(matchup_period=week)
                 for box_score in box_scores:
                     data.__setitem__(box_score.away_team.team_id, box_score.away_score)

@@ -46,6 +46,7 @@ guild_ids = __build_list_of_guild_ids()
 #this runs code upon every command received
 @bot.before_invoke
 async def before_each_command(context: discord.ApplicationContext):
+    print(f"Command received from {context.author.name}: {context.command.name}")
     accessible_commands = ["hey", "setup", "help-setup", "help-setup-private"]
     if context.command.name not in accessible_commands:
         global league_data
@@ -369,7 +370,7 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
     await interaction.followup.send(embed=embed)
 
 
-@bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a thas", guild_ids=guild_ids)
+@bot.command(name="top-half-players-percentage", description="Gets the top half of all rostered players and gives percentage of how many top-half players a has", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 @discord.option(name="stat", description="type 'avg' to sort players by average, leave blank for totals")
 async def top_half_players_percentage(interaction: discord.Interaction, year: int = None, stat: str = None):
@@ -402,10 +403,14 @@ async def top_half_players_percentage(interaction: discord.Interaction, year: in
 @bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
-    await interaction.response.defer()    
-    if year < 2019:
+    await interaction.response.defer() 
+
+    if year is None:
+        year = league_data.league.year
+    elif year < 2019:
         await interaction.followup.send("Box scores are unavailable prior to 2019")
         return
+
         
     original_year = league_data.league.year
     if year is not None:
@@ -415,7 +420,6 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     #each team ID gets a string W-L-T
     if year is None:
         year = league_data.league.year
-    await interaction.response.defer()
     data = league_data.get_record_vs_all_teams()
     name = "`TEAM".ljust(8) + "RECORD".ljust(12) + "PERC%`"
     description = ""
