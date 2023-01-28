@@ -23,9 +23,8 @@ intents = discord.Intents.all()
 bot = discord.Bot()
 bot.intents.all()
 
-# This is where the data being used in commands is built
-#league_data = LeagueData(int(os.getenv('LEAGUE_ID_BBL')), 2023)
-league_data = 0
+# global league data object for commands to access FBB league data
+league_data: LeagueData
 
 # get guild ID by right-clicking on server icon then hit Copy ID
 def __build_list_of_guild_ids():

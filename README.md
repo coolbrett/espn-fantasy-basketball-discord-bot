@@ -25,6 +25,7 @@ TO-DO
     - Once DB connected, figure out how to update and pull data directly from DB
 - Try and make the commands uniform -- scoreboard kind of sucks, get rid of '|'across commands if possible
 - Add logging?
+- bot token and firebase service account creds need to be regenerated since they were pushed to git
 - deploy the bot to Azure
 - set up github actions for automated deployments
 - Add new useful and advanced stats

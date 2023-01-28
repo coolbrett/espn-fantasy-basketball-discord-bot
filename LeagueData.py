@@ -4,7 +4,6 @@ from espn_api.basketball import box_player, box_score
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-import espn_api
 
 # All sensitive data needs to be held and imported in the .env file
 # the .env has to be loaded first before being used
