@@ -11,7 +11,6 @@ I want the bot to be able to display most things that you can find in the app as
 
 PROCESS
 -------
-
 1. Make the bot as feature-rich with stats and helpful commands as possible for your
     own league
 2. Deploy this bot somewhere and set up automated deployments 
@@ -20,9 +19,12 @@ PROCESS
 
 TO-DO 
 -----
-- Add error handling for incorrect parameters for commands
-- Write setup command that takes all the parameters needed to create a league object
-    - Store this data is a JSON, then look into NoSQL DB in Azure and how to connect it
+- Try and make the commands uniform -- scoreboard kind of sucks, get rid of '|'across commands if possible
+- replace usages of scoreboard()
+- get_record_vs_all_teams doesn't work if team has a bye
+- make /issue command to report issues
+- Add logging?
+- bot token and firebase service account creds need to be regenerated since they were pushed to git
 - deploy the bot to Azure
 - set up github actions for automated deployments
 - Add new useful and advanced stats
