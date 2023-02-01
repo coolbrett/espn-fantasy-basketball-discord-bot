@@ -20,9 +20,9 @@ PROCESS
 TO-DO 
 -----
 - Write setup command that takes all the parameters needed to create a league object
-    - Store this data is a JSON, then look into NoSQL DB and how to connect it
-    - Chose Firebase -- setup docs here -> https://firebase.google.com/docs/firestore/quickstart?authuser=0#python
-    - Once DB connected, figure out how to update and pull data directly from DB
+    - on_guild_available is overwriting over existing data which is deleting leagues    that are already setup
+    - Write function to check if a key exists in firebase
+    - Write function to get guild data corresponding with guild id in DB
 - Try and make the commands uniform -- scoreboard kind of sucks, get rid of '|'across commands if possible
 - Add logging?
 - bot token and firebase service account creds need to be regenerated since they were pushed to git

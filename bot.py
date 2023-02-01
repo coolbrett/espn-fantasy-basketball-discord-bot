@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 
 from LeagueData import LeagueData
 import os
@@ -7,6 +6,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import json
 import espn_api
+from FirebaseData import FirebaseData
 
 """
 This is the main file of the discord bot. All commands are being written here.
@@ -26,6 +26,8 @@ bot.intents.all()
 # global league data object for commands to access FBB league data
 league_data: LeagueData
 
+firebase_data = FirebaseData()
+
 # get guild ID by right-clicking on server icon then hit Copy ID
 def __build_list_of_guild_ids():
     #get all guild_id's and their data
@@ -39,7 +41,8 @@ def __build_list_of_guild_ids():
     return temp
 
 #get all guild_id's
-guild_ids = __build_list_of_guild_ids()
+guild_ids = firebase_data.get_all_guild_ids()
+#guild_ids = __build_list_of_guild_ids()
 
 
 #this runs code upon every command received
@@ -49,20 +52,29 @@ async def before_each_command(context: discord.ApplicationContext):
     accessible_commands = ["hey", "setup", "help-setup", "help-setup-private"]
     if context.command.name not in accessible_commands:
         global league_data
+        guild_id_as_string = str(context.guild_id)
+
         #load league data through guild_id in context
-        if str(context.guild_id) in guild_ids:
+        if guild_id_as_string in guild_ids:
             
             data = dict()
             with open('fantasy_leagues.json') as json_file:
                 data = json.load(json_file)
 
-            if data[str(context.guild_id)] == None:
+            #new - get guild
+            guild_fb = firebase_data.get_guild_information(str(context.guild_id))
+
+            # if data[guild_id_as_string] == None:
+            #     await context.interaction.followup.send("Your league is not set up! Use /setup to configure your league credentials")
+            #     print(context.command.name)
+            #     return
+
+            if guild_fb['league_id'] == None:
                 await context.interaction.followup.send("Your league is not set up! Use /setup to configure your league credentials")
                 print(context.command.name)
                 return
 
-            guild_id_as_string = str(context.guild_id)
-            league_id = data[guild_id_as_string]['fantasy_league_id']
+            league_id = guild_fb['league_id']
             
             #create league with and without private credentials
             if 'espn_s2' in data[guild_id_as_string] and 'swid' in data[guild_id_as_string]:
@@ -87,7 +99,7 @@ async def create_league_data(interaction: discord.Interaction, league_id, espn_s
 
 @bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=guild_ids)
 async def hey(interaction: discord.Interaction):
-    await interaction.response.send_message("Hello!")
+    await interaction.response.send_message("Hello!", ephemeral=True)
 
 
 @bot.command(name="three-weeks",
@@ -447,13 +459,13 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
     guild_id = interaction.guild_id
     global league_data
     print("before league creation")
-    league_data = create_league_data(interaction=interaction, league_id=fantasy_league_id, espn_s2=espn_s2, swid=swid)
+    league_data = await create_league_data(interaction=interaction, league_id=fantasy_league_id, espn_s2=espn_s2, swid=swid)
 
     #add league info to dict
     if espn_s2 != None and swid != None:
-        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'fantasy_league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
+        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
     else:
-        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'fantasy_league_id': str(fantasy_league_id)})
+        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id)})
     
     #load json into dict, and use update to set new info or overwrite existing data
     data = dict()
@@ -464,9 +476,11 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
 
     with open('fantasy_leagues.json', 'w') as json_file:
         print(f"data dumped: {data}")
-        json.dump(data, json_file)    
+        json.dump(data, json_file)   
+
+    firebase_data.add_new_guild(new_league_object_info) 
     
-    await interaction.followup.send("Setup successful!")
+    await interaction.followup.send("Setup successful!", ephemeral=True)
     return
 
 @bot.command(name="help-setup-private", description="Directions on how to get espn_s2 and swid values", guild_ids=guild_ids)
@@ -487,8 +501,6 @@ async def on_guild_available(guild: discord.Guild):
     global guild_ids
     if str(guild.id) not in guild_ids:
         guild_ids.append(str(guild.id))
-        print(guild_ids)
-        print(guild.id)
         
         data = dict()
         with open('fantasy_leagues.json') as json_file:
@@ -496,6 +508,9 @@ async def on_guild_available(guild: discord.Guild):
         
         #add new guild id to the json with None as value
         data.update({str(guild.id): None})
+        print("sending ID to firebase upon joining")
+        
+        firebase_data.add_new_guild({str(guild.id): {'guild_id': str(guild.id)}})
 
         with open('fantasy_leagues.json', 'w') as json_file:
             json.dump(data, json_file)
