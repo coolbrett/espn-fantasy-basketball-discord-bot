@@ -28,18 +28,6 @@ league_data: LeagueData
 
 firebase_data = FirebaseData()
 
-# get guild ID by right-clicking on server icon then hit Copy ID
-def __build_list_of_guild_ids():
-    #get all guild_id's and their data
-    data = list()
-    with open('fantasy_leagues.json') as json_file:
-        data = json.load(json_file)
-    
-    temp = []
-    for key in data.keys():
-        temp.append(key)
-    return temp
-
 #get all guild_id's
 guild_ids = firebase_data.get_all_guild_ids()
 #guild_ids = __build_list_of_guild_ids()
@@ -56,18 +44,9 @@ async def before_each_command(context: discord.ApplicationContext):
 
         #load league data through guild_id in context
         if guild_id_as_string in guild_ids:
-            
-            data = dict()
-            with open('fantasy_leagues.json') as json_file:
-                data = json.load(json_file)
 
             #new - get guild
             guild_fb = firebase_data.get_guild_information(str(context.guild_id))
-
-            # if data[guild_id_as_string] == None:
-            #     await context.interaction.followup.send("Your league is not set up! Use /setup to configure your league credentials")
-            #     print(context.command.name)
-            #     return
 
             if guild_fb['league_id'] == None:
                 await context.interaction.followup.send("Your league is not set up! Use /setup to configure your league credentials")
@@ -77,14 +56,12 @@ async def before_each_command(context: discord.ApplicationContext):
             league_id = guild_fb['league_id']
             
             #create league with and without private credentials
-            if 'espn_s2' in data[guild_id_as_string] and 'swid' in data[guild_id_as_string]:
+            if 'espn_s2' in guild_fb and 'swid' in guild_fb:
                 print("has private creds")
-                espn_s2 = data[guild_id_as_string]['espn_s2']
-                # temp = {'espn_s2': data[guild_id_as_string]['espn_s2']}
-                # data.update(temp)
-                # swid = data[guild_id_as_string]['swid']
-                swid = {'swid': data[guild_id_as_string]['swid']}
-                # data.update(temp)
+                espn_s2 = guild_fb['espn_s2']
+
+                #swid being an obj is not tested??
+                swid = guild_fb['swid']
                 league_data = await create_league_data(interaction=context.interaction, league_id=league_id, espn_s2=espn_s2, swid=swid)
             else:
                 league_data = await create_league_data(interaction=context.interaction, league_id=league_id, espn_s2=None, swid=None)
@@ -467,17 +444,6 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
     else:
         new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id)})
     
-    #load json into dict, and use update to set new info or overwrite existing data
-    data = dict()
-    with open('fantasy_leagues.json') as json_file:
-        data = json.load(json_file)
-        data.update(new_league_object_info)
-        print(f"in setup\n{new_league_object_info}")
-
-    with open('fantasy_leagues.json', 'w') as json_file:
-        print(f"data dumped: {data}")
-        json.dump(data, json_file)   
-
     firebase_data.add_new_guild(new_league_object_info) 
     
     await interaction.followup.send("Setup successful!", ephemeral=True)
@@ -501,19 +467,8 @@ async def on_guild_available(guild: discord.Guild):
     global guild_ids
     if str(guild.id) not in guild_ids:
         guild_ids.append(str(guild.id))
-        
-        data = dict()
-        with open('fantasy_leagues.json') as json_file:
-            data = json.load(json_file)
-        
-        #add new guild id to the json with None as value
-        data.update({str(guild.id): None})
         print("sending ID to firebase upon joining")
-        
         firebase_data.add_new_guild({str(guild.id): {'guild_id': str(guild.id)}})
-
-        with open('fantasy_leagues.json', 'w') as json_file:
-            json.dump(data, json_file)
     return
 
 @bot.event

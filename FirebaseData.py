@@ -32,7 +32,7 @@ class FirebaseData:
 
     def update_guild(self, data: dict) -> None:
         """
-        Updates data stored at the key of the dict or JSON passed in
+        THIS HASN'T BEEN TESTED -- Updates data stored at the key of the dict or JSON passed in
 
         :param data: Key should be guild_id and value should be another object with guild_id, league_id, and private league creds if needed
         """

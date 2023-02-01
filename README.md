@@ -19,11 +19,10 @@ PROCESS
 
 TO-DO 
 -----
-- Write setup command that takes all the parameters needed to create a league object
-    - on_guild_available is overwriting over existing data which is deleting leagues    that are already setup
-    - Write function to check if a key exists in firebase
-    - Write function to get guild data corresponding with guild id in DB
 - Try and make the commands uniform -- scoreboard kind of sucks, get rid of '|'across commands if possible
+- replace usages of scoreboard()
+- get_record_vs_all_teams doesn't work if team has a bye
+- make /issue command to report issues
 - Add logging?
 - bot token and firebase service account creds need to be regenerated since they were pushed to git
 - deploy the bot to Azure
