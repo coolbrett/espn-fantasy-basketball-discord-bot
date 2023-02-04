@@ -174,12 +174,8 @@ class LeagueData:
     def get_box_scores_and_matchups_of_week(self, week: int) -> list:
         """Grabs list of box scores and matchups of week given, and returns a list of dictionaries
             containing the matchups and their corresponding box scores"""
-        # print(f"in get_box_scores_and_matchups_of_week")
         box_scores = self.league.box_scores(matchup_period=week)
-        # print("got box scores")
-        # print(f"Year: {self.league.year} Week: {week}")
         matchups = self.league.scoreboard(matchupPeriod=week)
-        # print('got scoreboard')
         data = []
         count = 0
         for matchup in matchups:
@@ -192,14 +188,14 @@ class LeagueData:
         temp = player_name.split()
         return f"{temp[0][0]}. {temp[1]}"
 
-    def find_length_of_longest_team_name(self, matchup: Matchup) -> int:
+    def find_length_of_longest_team_name(self, box_score: box_score) -> int:
         """Returns the length of the longest team name of a given matchup"""
         num = 0
 
-        if len(matchup.away_team.team_name) > len(matchup.home_team.team_name):
-            num = len(matchup.away_team.team_name)
+        if len(box_score.away_team.team_name) > len(box_score.home_team.team_name):
+            num = len(box_score.away_team.team_name)
         else:
-            num = len(matchup.home_team.team_name)
+            num = len(box_score.home_team.team_name)
 
         return num
     

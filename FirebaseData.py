@@ -52,7 +52,6 @@ class FirebaseData:
         """
         ref = db.reference('fbbot')
         data = ref.get('guilds')
-        print(f"data: {data}")
         guild_ids = list()
         if data[0] != None:
             keys_as_list = list(data[0]['guilds'].keys())
