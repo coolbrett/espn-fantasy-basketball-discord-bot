@@ -390,7 +390,7 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     if year is not None:
         league_data.set_year(year=year)
 
-    embed = discord.Embed(title=f"Record vs. All Teams")
+    embed = discord.Embed(title=f"Record vs. All Teams {league_data.league.year - 1}-{league_data.league.year}")
     #each team ID gets a string W-L-T
     if year is None:
         year = league_data.league.year

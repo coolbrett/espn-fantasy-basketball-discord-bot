@@ -19,7 +19,6 @@ PROCESS
 
 TO-DO 
 -----
-- get_record_vs_all_teams doesn't work if team has a bye
 - make /issue command to report issues
 - Add logging?
 - bot token and firebase service account creds need to be regenerated since they were pushed to git
@@ -28,6 +27,7 @@ TO-DO
 - Cleanup git repo and README before going public
 - deploy the bot to Firebase?
 - set up github actions for automated deployments
+- Cleanup git repo and README before going public
 - Add new useful and advanced stat
     - Add commands that fire every so often (weekly and yearly awards)
     - Add compare players command (player1 season1 player2 season2)
