@@ -19,8 +19,6 @@ PROCESS
 
 TO-DO 
 -----
-- Try and make the commands uniform -- scoreboard kind of sucks, record-vs-all-teams looks the best
-- replace usages of scoreboard()
 - get_record_vs_all_teams doesn't work if team has a bye
 - make /issue command to report issues
 - Add logging?
