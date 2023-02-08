@@ -61,9 +61,9 @@ class LeagueData:
 
     def __get_last_three_weeks_data(self, week: int):
         """Helper method to get the three weeks data"""
-        three_weeks_data = {'current_week': self.league.scoreboard(week),
-                            'previous_week': self.league.scoreboard(week - 1),
-                            'two_weeks_back': self.league.scoreboard(week - 2)}
+        three_weeks_data = {'current_week': self.league.box_scores(week),
+                            'previous_week': self.league.box_scores(week - 1),
+                            'two_weeks_back': self.league.box_scores(week - 2)}
         return three_weeks_data
 
     def __build_list_three_weeks_data(self, three_weeks_data: dict):
@@ -81,9 +81,9 @@ class LeagueData:
 
                 for j in range(len(three_weeks_list)):
                     if home_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
-                        three_weeks_list[j]['past_three_weeks_total'] += matchup.home_final_score
+                        three_weeks_list[j]['past_three_weeks_total'] += matchup.home_score
                     if away_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
-                        three_weeks_list[j]['past_three_weeks_total'] += matchup.away_final_score
+                        three_weeks_list[j]['past_three_weeks_total'] += matchup.away_score
 
         def sort_three_weeks_list(list: list):
             return list['past_three_weeks_total']
@@ -170,18 +170,6 @@ class LeagueData:
             # compare team id's -- if True then return
             if box_score.away_team.team_id == team.team_id or box_score.home_team.team_id == team.team_id:
                 return box_score
-
-    def get_box_scores_and_matchups_of_week(self, week: int) -> list:
-        """Grabs list of box scores and matchups of week given, and returns a list of dictionaries
-            containing the matchups and their corresponding box scores"""
-        box_scores = self.league.box_scores(matchup_period=week)
-        matchups = self.league.scoreboard(matchupPeriod=week)
-        data = []
-        count = 0
-        for matchup in matchups:
-            data.append({matchup: box_scores[count]})
-            count += 1
-        return data
 
     def shorten_player_name(self, player_name: str) -> str:
         """Shortens player name to be first inital then last name [G. Antetokounmpo]"""
