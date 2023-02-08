@@ -280,8 +280,10 @@ class LeagueData:
                 #bye week team object is set to 0
                 box_scores = self.league.box_scores(matchup_period=week)
                 for box_score in box_scores:
-                    data.__setitem__(box_score.away_team.team_id, box_score.away_score)
-                    data.__setitem__(box_score.home_team.team_id, box_score.home_score)
+                    if box_score.away_team != 0:
+                        data.__setitem__(box_score.away_team.team_id, box_score.away_score)
+                    if box_score.home_team != 0:
+                        data.__setitem__(box_score.home_team.team_id, box_score.home_score)
 
                 #do W-L-T here
                 #
