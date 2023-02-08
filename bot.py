@@ -4,7 +4,6 @@ from LeagueData import LeagueData
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-import json
 import espn_api
 from FirebaseData import FirebaseData
 
@@ -50,17 +49,13 @@ async def before_each_command(context: discord.ApplicationContext):
 
             if guild_fb['league_id'] == None:
                 await context.interaction.followup.send("Your league is not set up! Use /setup to configure your league credentials")
-                print(context.command.name)
                 return
 
             league_id = guild_fb['league_id']
             
             #create league with and without private credentials
             if 'espn_s2' in guild_fb and 'swid' in guild_fb:
-                print("has private creds")
                 espn_s2 = guild_fb['espn_s2']
-
-                #swid being an obj is not tested??
                 swid = guild_fb['swid']
                 league_data = await create_league_data(interaction=context.interaction, league_id=league_id, espn_s2=espn_s2, swid=swid)
             else:
@@ -109,7 +104,7 @@ async def standings(interaction: discord.Interaction, year: int = None):
         description = ""
         description += "`#    Team".ljust(15) + "W-L-T`\n"
         for team in list_of_teams:
-            description += "`" + str(place) + ")   " + team.team_abbrev.ljust(5) + " |  {}-{}-{}".format(team.wins, team.losses, team.ties).ljust(9) + "`\n"
+            description += "`" + str(place) + ")   " + team.team_abbrev.ljust(5) + "   {}-{}-{}".format(team.wins, team.losses, team.ties).ljust(9) + "`\n"
             place += 1
         embed.add_field(name=str(div), value=description, inline=False)
 
@@ -144,13 +139,13 @@ async def draft_recap(interaction: discord.Interaction, year: int = None, round:
                     player_name = league_data.shorten_player_name(player_name=player_name)
 
                 description += "`" + str(str(pick.round_pick) + ")").ljust(4) + pick.team.team_abbrev.ljust(
-                    5) + "|  {}".format(player_name).ljust(9) + "`\n"
+                    5) + "  {}".format(player_name).ljust(9) + "`\n"
 
             description += "\n"
             embed.add_field(name=("Round: " + str(round_num)), value=description, inline=False)
     else:
         round_list_of_picks = draft_recap[round]
-        description = "`#  Team".ljust(13) + "Pick`\n"
+        description = "`#   Team".ljust(12) + "Pick`\n"
         for pick in round_list_of_picks:
             # append pick info
             player_name = pick.playerName
@@ -159,7 +154,7 @@ async def draft_recap(interaction: discord.Interaction, year: int = None, round:
                 player_name = f"{temp[0][0]}. {temp[1]}"
 
             description += "`" + str(str(pick.round_pick) + ")").ljust(4) + pick.team.team_abbrev.ljust(
-                5) + "|  {}".format(player_name).ljust(9) + "`\n"
+                5) + "  {}".format(player_name).ljust(9) + "`\n"
 
         description += "\n"
         embed.add_field(name=("Round: " + str(round)), value=description, inline=False)
@@ -182,12 +177,12 @@ async def abbreviations(interaction: discord.Interaction, year: int = None):
         league_data.set_year(year=year)
 
     embed = discord.Embed(title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year))
-    description = "`Abbrev".ljust(8) + "| Team`\n"
+    description = "`Abbrev".ljust(8) + " Team`\n"
 
     abbreviations = league_data.get_abbreviations()
 
     for abbrev, team_name in abbreviations.items():
-        description += f"`{abbrev}".ljust(8) + f"| {team_name}`\n"
+        description += f"`{abbrev}".ljust(8) + f" {team_name}`\n"
     embed.add_field(name="Abbreviations", value=description, inline=False)
 
     # set year back to original year if it was changed
@@ -221,7 +216,7 @@ async def history(interaction: discord.Interaction, year: int):
             title = f"Champion🏆: {team.team_name}"
         else:
             # the rest
-            description += f"`{place}) {team.team_abbrev}".ljust(10) + f"| {team.wins}-{team.losses}-{team.ties}`\n"
+            description += f"`{place}) {team.team_abbrev}".ljust(10) + f" {team.wins}-{team.losses}-{team.ties}`\n"
             place += 1
 
     embed.add_field(name=title, value=description, inline=False)
@@ -244,30 +239,10 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
     original_year = league_data.league.year
     if year is not None:
         if week is not None:
-            league_data.set_year(year=year)
             if year < 2019:
-                # Build scoreboard for years 2018 and earlier
-                embeds = []
-                embed = discord.Embed(title="Week " + str(week) + " Scoreboard (" + str(league_data.league.year - 1) + "-" + str(league_data.league.year) + ")")
-                embeds.append(embed)
-                matchups = league_data.league.scoreboard(matchupPeriod=week)
-
-                for matchup in matchups:
-                    pad_amount = league_data.find_length_of_longest_team_name(matchup=matchup) + 10
-                    embed = discord.Embed(title="")
-                    embed.add_field(name="".ljust(pad_amount,
-                                          "-") + f"\n{matchup.away_team.team_name}:" + f" {int(matchup.away_final_score)}\n",
-                            value=f"**{matchup.away_team.wins}-{matchup.away_team.losses}-{matchup.away_team.ties}**\n\n", inline=False)
-                    embed.add_field(name=f"{matchup.home_team.team_name}:" + f" {int(matchup.home_final_score)}\n",
-                            value=f"**{matchup.home_team.wins}-{matchup.home_team.losses}-{matchup.home_team.ties}**\n**" + "".ljust(pad_amount, "-") + "**", inline=False)
-                    embeds.append(embed)
-
-                # set year back to original year if it was changed
-                if league_data.league.year != original_year:
-                    league_data.set_year(original_year)
-
-                await interaction.followup.send(embeds=embeds)
+                await interaction.followup.send("Cannot get box scores prior to 2019")
                 return
+            league_data.set_year(year=year)  
         else:
             await interaction.followup.send("Provide a week number if going into previous seasons!")
             return
@@ -275,36 +250,47 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
     if week is None:
         week = league_data.find_current_week()
 
-    # embedded messages can only have 25 fields, so multiple embedded messages are needed just in case a league
-    # has more than 12 teams
     embeds = []
     embed = discord.Embed(title="Week " + str(week) + " Scoreboard (" + str(league_data.league.year - 1) + "-" + str(
         league_data.league.year) + ")")
     embeds.append(embed)
-    list_of_matchup_dicts = league_data.get_box_scores_and_matchups_of_week(week=week)
 
-    for data in list_of_matchup_dicts:
-        for matchup, box_score in data.items():
+    box_scores = league_data.league.box_scores(matchup_period=week)
 
-            top_scorer_home = league_data.get_top_scorer(lineup=box_score.home_lineup)
-            top_scorer_away = league_data.get_top_scorer(lineup=box_score.away_lineup)
+    for box_score in box_scores:
+        #each box score will be an embed message
+        embed = discord.Embed(title="")
+        team_name_away = box_score.away_team.team_name
+        team_name_home = box_score.home_team.team_name
+        score_away = box_score.away_score
+        score_home = box_score.home_score
+        top_scorer_home = league_data.get_top_scorer(lineup=box_score.home_lineup)
+        top_scorer_away = league_data.get_top_scorer(lineup=box_score.away_lineup)
 
-            # Top performer field goes off the side on the app :/
-            embed = discord.Embed(title="")
-            if len(top_scorer_away.name) > 18:
-                top_scorer_away.name = league_data.shorten_player_name(player_name=top_scorer_away.name)
-            elif len(top_scorer_home.name) > 18:
-                top_scorer_home.name = league_data.shorten_player_name(player_name=top_scorer_home.name)
+        TEAM_ABBREV_SPACING = 6
+        PLAYER_NAME_MAX = 18
 
-            pad_amount = league_data.find_length_of_longest_team_name(matchup=matchup) + 10
-            embed.add_field(name="".ljust(pad_amount,
-                                          "-") + f"\n{matchup.away_team.team_name}:" + f" {int(matchup.away_final_score)}\n",
-                            value=f"**{matchup.away_team.wins}-{matchup.away_team.losses}-{matchup.away_team.ties}**\n\n__**Top Performer**__\n{top_scorer_away.name}: " + str(
-                                int(top_scorer_away.points)) + "\n|", inline=False)
-            embed.add_field(name=f"{matchup.home_team.team_name}:" + f" {int(matchup.home_final_score)}\n",
-                            value=f"**{matchup.home_team.wins}-{matchup.home_team.losses}-{matchup.home_team.ties}**\n\n__**Top Performer**__\n{top_scorer_home.name}: " + str(
-                                int(top_scorer_home.points)) + "\n**" + "".ljust(pad_amount, "-") + "**", inline=False)
-            embeds.append(embed)
+        if len(top_scorer_home.name) > PLAYER_NAME_MAX:
+            top_scorer_home.name = league_data.shorten_player_name(top_scorer_home.name)
+        if len(top_scorer_away.name) > PLAYER_NAME_MAX:
+            top_scorer_away.name = league_data.shorten_player_name(top_scorer_away.name)
+        
+        abbrev_away = box_score.away_team.team_abbrev
+        abbrev_home = box_score.home_team.team_abbrev
+
+        name = f"{team_name_away}"
+        value = f"`{int(score_away)}`"
+        embed.add_field(name=name, value=value, inline=False)
+
+        name = f"{team_name_home}"
+        value = f"`{int(score_home)}`"
+        embed.add_field(name=name, value=value, inline=False)
+
+        name = f"~~-----------------~~\n**Top Performers**"
+        value = f"`{abbrev_away.ljust(TEAM_ABBREV_SPACING)}{top_scorer_away.name.ljust(PLAYER_NAME_MAX)}{int(top_scorer_away.points)}`\n`{abbrev_home.ljust(TEAM_ABBREV_SPACING)}{top_scorer_home.name.ljust(PLAYER_NAME_MAX)}{int(top_scorer_home.points)}`"
+        embed.add_field(name=name, value=value, inline=False)
+
+        embeds.append(embed)
 
     # set year back to original year if it was changed
     if league_data.league.year != original_year:
@@ -409,13 +395,15 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     if year is None:
         year = league_data.league.year
     data = league_data.get_record_vs_all_teams()
-    name = "`TEAM".ljust(8) + "RECORD".ljust(12) + "PERC%`"
+    name = "`#".ljust(6) + "TEAM".ljust(8) + "RECORD".ljust(12) + "PERC%`"
     description = ""
+    place = 1
     for team_id, record in data.items():
         team = league_data.league.get_team_data(team_id=team_id)
-        description += f"`{team.team_abbrev}".ljust(8) + f"{record['wins']}-{record['losses']}-{record['ties']}".ljust(12)
+        description += f"`{place})".ljust(6) + f"{team.team_abbrev}".ljust(8) + f"{record['wins']}-{record['losses']}-{record['ties']}".ljust(12)
         win_percentage = league_data.get_win_percentage(wins=record['wins'], losses=record['losses'], ties=record['ties'])
         description += f"{win_percentage}`\n"
+        place += 1
     embed.add_field(name=name, value=description)
 
 
