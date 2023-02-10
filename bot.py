@@ -428,9 +428,9 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
 
     #add league info to dict
     if espn_s2 != None and swid != None:
-        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
+        new_league_object_info.__setitem__(str(guild_id), {'credentials': {'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)}})
     else:
-        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id)})
+        new_league_object_info.__setitem__(str(guild_id), {'credentials': {'league_id': str(fantasy_league_id)}})
     
     firebase_data.add_new_guild(new_league_object_info) 
     

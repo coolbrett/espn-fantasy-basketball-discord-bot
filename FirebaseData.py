@@ -25,10 +25,9 @@ class FirebaseData:
 
         @param data -> Key should be guild_id and value should be another object with guild_id, league_id, and private league creds if needed
         """
-        ref = db.reference('fbbot')
-        guild_ref = ref.child('guilds')
-        print(f"Add New Guild: data -> {data}")
-        guild_ref.set(data)
+        # guild_id = next(iter(data))
+        ref = db.reference('fbbot/guilds/')
+        ref.set(data)
 
     def update_guild(self, data: dict) -> None:
         """
@@ -36,8 +35,21 @@ class FirebaseData:
 
         :param data: Key should be guild_id and value should be another object with guild_id, league_id, and private league creds if needed
         """
-        ref = db.reference('fbbot')
-        ref.child('guilds').update({data})
+        # guild_id = next(iter(data))
+        ref = db.reference('fbbot/guilds/')
+        ref.update({data})
+
+    def log(self, data: dict) -> None:
+        """
+        Logs a message to the respective guild ID. Data must be have guild id as key and log object as value with values error and context as objects
+        """
+        if 'log' in data:
+            if 'error' in data['log'] and 'context' in data['log']:
+                ref = db.reference('fbbot/guilds/')
+                ref.update({data})
+            else:
+                #couldn't log to firebase due to error or context object not being there
+                data = {'log': {'error': "Attempted to log in log method of FirebaseData"}}
 
 
     def delete():
