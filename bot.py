@@ -268,7 +268,7 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
         top_scorer_away = league_data.get_top_scorer(lineup=box_score.away_lineup)
 
         TEAM_ABBREV_SPACING = 6
-        PLAYER_NAME_MAX = 18
+        PLAYER_NAME_MAX = 22
 
         if len(top_scorer_home.name) > PLAYER_NAME_MAX:
             top_scorer_home.name = league_data.shorten_player_name(top_scorer_home.name)
@@ -446,6 +446,11 @@ async def help_setup_private_league(interaction: discord.Interaction):
 async def help_setup_private_league(interaction: discord.Interaction):
     await interaction.response.send_message("MOBILE APP: Go to the `League Info` tab in your league to get the League ID\n\nWEBSITE: On any page inside the league, the league ID is specified in the URL. Should be 6 digits.")
     return
+
+@bot.command(name="report-issue", description="Details on how to report an issue", guild_ids=guild_ids)
+async def report_issue(interaction: discord.Interaction):
+    await interaction.response.send_message("Report or search for issues here: https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues")
+
 
 
 @bot.event
