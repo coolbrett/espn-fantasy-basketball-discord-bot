@@ -56,3 +56,15 @@ NOTES
     - Storage: Log messages are stored in a central location, such as a file, a database, or a cloud-based service, where they can be easily retrieved and analyzed.
     
     - This basic scheme provides a starting point for logging in your application, but you can also add additional elements, such as unique IDs for log messages, custom metadata, and structured log data, to meet your specific needs and requirements.
+
+- Good events to log typically include important and significant actions performed by an application, system, or user. Here are some examples of events that are commonly logged:
+
+    - Authentication and authorization events, such as successful and unsuccessful login attempts
+    - System startup and shutdown events
+    - Resource access events, such as file or database access
+    - Configuration changes to the system or application
+    - Network events, such as incoming and outgoing network connections
+    - Performance events, such as system performance metrics, resource utilization, and slow requests
+    - Security events, such as detected intrusions, attacks, or unauthorized access attempts
+    - Error and exception events, such as uncaught exceptions, unexpected errors, or system failures
+    - It's important to log events that can provide context to security incidents and system failures, as well as events that can help monitor and diagnose performance issues. The specific events to log will depend on the requirements of the system or application, as well as any regulatory or compliance requirements.

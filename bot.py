@@ -423,17 +423,21 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
     new_league_object_info = dict()
     guild_id = interaction.guild_id
     global league_data
-    print("before league creation")
+
+    message = "Setup called -- Creating league in setup"
+    firebase_data.log(level='INFO', message=message, guild_id=str(guild_id))
     league_data = await create_league_data(interaction=interaction, league_id=fantasy_league_id, espn_s2=espn_s2, swid=swid)
 
     #add league info to dict
     if espn_s2 != None and swid != None:
-        new_league_object_info.__setitem__(str(guild_id), {'credentials': {'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)}})
+        new_league_object_info.__setitem__('credentials', {'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
     else:
-        new_league_object_info.__setitem__(str(guild_id), {'credentials': {'league_id': str(fantasy_league_id)}})
+        new_league_object_info.__setitem__('credentials', {'league_id': str(fantasy_league_id)})
     
-    firebase_data.add_new_guild(new_league_object_info) 
-    
+    message = "Sending new league object to firebase"
+    firebase_data.log(level='INFO', message=message, guild_id=str(guild_id), data=new_league_object_info)
+    firebase_data.add_new_guild(new_league_object_info, str(guild_id))
+
     await interaction.followup.send("Setup successful!", ephemeral=True)
     return
 

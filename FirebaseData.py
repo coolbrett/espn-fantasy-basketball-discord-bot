@@ -1,7 +1,8 @@
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
-
+import time
+import datetime as datetime
 class FirebaseData:
     """
     Class to handle all things related to Firebase such as calls to add, update, or delete data
@@ -19,15 +20,15 @@ class FirebaseData:
         })
         print("firebase connected")
 
-    def add_new_guild(self, data: dict) -> None:
+    def add_new_guild(self, data: dict, guild_id: str) -> None:
         """
         Add new guild to the database for the bot to recognize
 
         @param data -> Key should be guild_id and value should be another object with guild_id, league_id, and private league creds if needed
         """
         # guild_id = next(iter(data))
-        ref = db.reference('fbbot/guilds/')
-        ref.set(data)
+        ref = db.reference(f'fbbot/guilds/{guild_id}')
+        ref.update(data)
 
     def update_guild(self, data: dict) -> None:
         """
@@ -39,18 +40,34 @@ class FirebaseData:
         ref = db.reference('fbbot/guilds/')
         ref.update({data})
 
-    def log(self, data: dict) -> None:
+    def log(self, level: str, message: str, guild_id: str, error=None, data=None) -> None:
         """
-        Logs a message to the respective guild ID. Data must be have guild id as key and log object as value with values error and context as objects
+        Sends a log to Firebase to be stored under the guild_id passed in |
+        data passed should have message, context object, and optionally an error object
         """
-        if 'log' in data:
-            if 'error' in data['log'] and 'context' in data['log']:
-                ref = db.reference('fbbot/guilds/')
-                ref.update({data})
-            else:
-                #couldn't log to firebase due to error or context object not being there
-                data = {'log': {'error': "Attempted to log in log method of FirebaseData"}}
 
+        #Logs should have timestamp, id, severity level, message, context object, and optionally an error object
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+        ref = db.reference(f'fbbot/guilds/{guild_id}/logs')
+
+        log = {
+            f"{now}": {
+                "timestamp": now,
+                "message": message
+                }
+            }
+
+        if error != None:
+            #get error message and append it to log
+            pass
+
+        if data != None:
+            #append data obj to log
+            pass
+        
+        ref.update(log)
+            
+                
 
     def delete():
         """
