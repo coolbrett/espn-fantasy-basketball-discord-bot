@@ -4,5 +4,5 @@ Click here to invite the bot to your server: https://discord.com/api/oauth2/auth
 
 
 ### Setup
-- Once FBBot is in your server, use commands `help-setup` if your ESPN H2H Fantasy Basketball League is public
+- Once FBBot is in your server, use command `help-setup` if your ESPN H2H Fantasy Basketball League is public
 - If your ESPN H2H Fantasy Basketball League is private, then use command `help-setup-private`
