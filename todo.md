@@ -1,6 +1,5 @@
 TO-DO 
 -----
-- bot token and firebase service account creds need to be regenerated since they were pushed to git
 - Cleanup git repo and README before going public
 - deploy the bot to Firebase?
 - set up github actions for automated deployments
