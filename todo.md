@@ -1,7 +1,5 @@
 TO-DO 
 -----
-- Cleanup git repo and README before going public
-- deploy the bot to Firebase?
 - set up github actions for automated deployments
 - Try the logos again
 - Add new useful and advanced stats
