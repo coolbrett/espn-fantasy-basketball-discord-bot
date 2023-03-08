@@ -1,33 +1,18 @@
 TO-DO 
 -----
-- Add logging?
-    - restructure guild id collections to have separate collections for credentials and logging
-    - check notes below for good logging practice
 - bot token and firebase service account creds need to be regenerated since they were pushed to git
-- Test on another server to make sure all functionalities work there too
-- Support server?
 - Cleanup git repo and README before going public
 - deploy the bot to Firebase?
 - set up github actions for automated deployments
-- Cleanup git repo and README before going public
-- Add new useful and advanced stat
+- Try the logos again
+- Add new useful and advanced stats
     - Add commands that fire every so often (weekly and yearly awards)
     - Add compare players command (player1 season1 player2 season2)
     - Add schedule command
         - team specific or week in league specific
 - Look into message options thing that Elijah showed you
-- Add commands that fire every so often (weekly and yearly awards)
-
-
-
-
-FUTURE WORK - once the bot is polished, bulletproof, and well-designed
------------
-- Add roto support??
-- Look into adding team logo's on certain commands -- teams have logo url fields
-    There is a branch on the repo called logos -- fetching the pics and sending them
-    through the bot is working, but the logos have weird lines coming off the right
-- Add commands that fire every so often (weekly and yearly awards)
+- post on top.gg
+- make frontend for registration?
 
 
 NOTES
