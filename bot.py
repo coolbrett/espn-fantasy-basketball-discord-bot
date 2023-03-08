@@ -29,7 +29,6 @@ firebase_data = FirebaseData()
 
 #get all guild_id's
 guild_ids = firebase_data.get_all_guild_ids()
-#guild_ids = __build_list_of_guild_ids()
 
 
 #this runs code upon every command received
@@ -47,16 +46,16 @@ async def before_each_command(context: discord.ApplicationContext):
             #new - get guild
             guild_fb = firebase_data.get_guild_information(str(context.guild_id))
 
-            if guild_fb['league_id'] == None:
+            if 'league_id' not in guild_fb['credentials']:
                 await context.interaction.followup.send("Your league is not set up! Use /setup to configure your league credentials")
                 return
 
-            league_id = guild_fb['league_id']
+            league_id = guild_fb['credentials']['league_id']
             
             #create league with and without private credentials
-            if 'espn_s2' in guild_fb and 'swid' in guild_fb:
-                espn_s2 = guild_fb['espn_s2']
-                swid = guild_fb['swid']
+            if 'espn_s2' in guild_fb['credentials'] and 'swid' in guild_fb['credentials']:
+                espn_s2 = guild_fb['credentials']['espn_s2']
+                swid = guild_fb['credentials']['swid']
                 league_data = await create_league_data(interaction=context.interaction, league_id=league_id, espn_s2=espn_s2, swid=swid)
             else:
                 league_data = await create_league_data(interaction=context.interaction, league_id=league_id, espn_s2=None, swid=None)
@@ -255,11 +254,18 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
         league_data.league.year) + ")")
     embeds.append(embed)
 
-    box_scores = league_data.league.box_scores(matchup_period=week)
+    #box_scores = league_data.league.box_scores(matchup_period=week)
+    box_scores = league_data.league.box_scores()
+
 
     for box_score in box_scores:
         #each box score will be an embed message
         embed = discord.Embed(title="")
+        
+        #checks to make sure neither team has bye
+        if not box_score.away_lineup or not box_score.home_lineup:
+            continue
+
         team_name_away = box_score.away_team.team_name
         team_name_home = box_score.home_team.team_name
         score_away = box_score.away_score
@@ -423,17 +429,21 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
     new_league_object_info = dict()
     guild_id = interaction.guild_id
     global league_data
-    print("before league creation")
+
+    message = "Setup called -- Creating league in setup"
+    firebase_data.log(level='INFO', message=message, guild_id=str(guild_id))
     league_data = await create_league_data(interaction=interaction, league_id=fantasy_league_id, espn_s2=espn_s2, swid=swid)
 
     #add league info to dict
     if espn_s2 != None and swid != None:
-        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
+        new_league_object_info.__setitem__('credentials', {'league_id': str(fantasy_league_id), 'espn_s2': str(espn_s2), 'swid': str(swid)})
     else:
-        new_league_object_info.__setitem__(str(guild_id), {'guild_id': str(guild_id), 'league_id': str(fantasy_league_id)})
+        new_league_object_info.__setitem__('credentials', {'league_id': str(fantasy_league_id)})
     
-    firebase_data.add_new_guild(new_league_object_info) 
-    
+    message = "Sending new league object to firebase"
+    firebase_data.log(level='INFO', message=message, guild_id=str(guild_id), data=new_league_object_info)
+    firebase_data.add_new_guild(new_league_object_info, str(guild_id))
+
     await interaction.followup.send("Setup successful!", ephemeral=True)
     return
 
