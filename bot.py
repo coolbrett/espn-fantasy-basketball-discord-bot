@@ -63,7 +63,7 @@ async def before_each_command(context: discord.ApplicationContext):
 async def create_league_data(interaction: discord.Interaction, league_id, espn_s2, swid):
     """Helper function to handle creation of LeagueData"""
     try:
-        return LeagueData(league_id=int(league_id), year=2023, espn_s2=espn_s2, swid=swid)
+        return LeagueData(league_id=int(league_id), year=2024, espn_s2=espn_s2, swid=swid)
     except espn_api.requests.espn_requests.ESPNInvalidLeague:
         await interaction.response.send_message("League credentials are invalid, use /setup again with correct credentials")
 

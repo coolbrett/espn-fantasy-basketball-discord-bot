@@ -1,15 +1,31 @@
 TO-DO 
 -----
+- Deploy it with Google Compute VM thing? 
+    - clone it there then run it I guess
 - set up github actions for automated deployments
+    - Might need to be an action to go into a VM via SSH and run terminal commmands to git pull then restart
+- Have main be the main discord bot and always have it running, then have a test discord bot set to a development branch
 - Try the logos again
 - Add new useful and advanced stats
     - Add commands that fire every so often (weekly and yearly awards)
     - Add compare players command (player1 season1 player2 season2)
     - Add schedule command
         - team specific or week in league specific
+    - average fantasy points a player gets when playing that team (career, last X seasons, both?)
+    - Use projected points totals to get a before season power rankings
+    - Do current power rankings? last three weeks column with season rank column?
+     - Use live draft trends to determine draft grades for each team (compare player at spot drafted with what the live trend is)
+        - or use pre-season rankings? 
+- Set up gambling feature to gain and bet chips on fantasy related or real-life bets
+    - maybe grab the top X amount of trending bets and have users choose from that?
+    - call the fake currency "LeBucks" or "LeBux"
+    - claim daily reward?
+        - keep track of daily reward streaks and give perks/bonus currency the longer it goes
 - Look into message options thing that Elijah showed you
+    - this could help bring your bot to be a small GUI instead of terminal commands?
 - post on top.gg
 - make frontend for registration?
+- Create Wiki on github with docs on all commands?
 
 
 NOTES
