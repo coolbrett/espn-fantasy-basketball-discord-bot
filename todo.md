@@ -14,15 +14,22 @@ TO-DO
     - average fantasy points a player gets when playing that team (career, last X seasons, both?)
     - Use projected points totals to get a before season power rankings
     - Do current power rankings? last three weeks column with season rank column?
-     - Use live draft trends to determine draft grades for each team (compare player at spot drafted with what the live trend is)
-        - or use pre-season rankings? 
+        - Use live draft trends to determine draft grades for each team (compare player at spot drafted with what the live trend is)
+            - or use pre-season rankings? 
+    - Have leaderboard of players who have scored the most on a given day/week/month/year
 - Set up gambling feature to gain and bet chips on fantasy related or real-life bets
     - maybe grab the top X amount of trending bets and have users choose from that?
     - call the fake currency "LeBucks" or "LeBux"
     - claim daily reward?
         - keep track of daily reward streaks and give perks/bonus currency the longer it goes
+        - weekend bonus since games on saturday and sunday start at weird times?
+    - check out elijah's betting bot
+    - Have Lebucks Leaderboard (server and global leaderboard)
+    - Have biggest winners and losers for daily, weekly, monthly timeperiods
+    - Historic bets? 
 - Look into message options thing that Elijah showed you
     - this could help bring your bot to be a small GUI instead of terminal commands?
+    - Maybe use Options to have Stats and Gambling sections?
 - post on top.gg
 - make frontend for registration?
 - Create Wiki on github with docs on all commands?

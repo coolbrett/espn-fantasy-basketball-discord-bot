@@ -63,7 +63,8 @@ async def before_each_command(context: discord.ApplicationContext):
 async def create_league_data(interaction: discord.Interaction, league_id, espn_s2, swid):
     """Helper function to handle creation of LeagueData"""
     try:
-        return LeagueData(league_id=int(league_id), year=2024, espn_s2=espn_s2, swid=swid)
+        data = LeagueData(league_id=int(league_id), year=2024, espn_s2=espn_s2, swid=swid)
+        return data
     except espn_api.requests.espn_requests.ESPNInvalidLeague:
         await interaction.response.send_message("League credentials are invalid, use /setup again with correct credentials")
 
@@ -471,7 +472,7 @@ async def on_guild_available(guild: discord.Guild):
     if str(guild.id) not in guild_ids:
         guild_ids.append(str(guild.id))
         print("sending ID to firebase upon joining")
-        firebase_data.add_new_guild({str(guild.id): {'guild_id': str(guild.id)}})
+        firebase_data.add_new_guild({str(guild.id): {'guild_id': str(guild.id)}}, guild_id=guild.id)
     return
 
 @bot.event
