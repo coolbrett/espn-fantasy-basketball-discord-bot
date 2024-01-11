@@ -66,6 +66,12 @@ class LeagueData:
                             'two_weeks_back': self.league.box_scores(week - 2)}
         return three_weeks_data
 
+    def find_team_by_abbreviation(abbreviation: str, three_weeks_list: list):
+        for team in three_weeks_list:
+            if team['team_abbrev'] == abbreviation:
+                return team
+        return None
+    
     def __build_list_three_weeks_data(self, three_weeks_data: dict):
         """Helper method to build the list"""
         # list of objects
@@ -80,17 +86,19 @@ class LeagueData:
                 away_team = matchup.away_team
 
                 for j in range(len(three_weeks_list)):
-                    if home_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
-                        three_weeks_list[j]['past_three_weeks_total'] += matchup.home_score
-                    if away_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
-                        three_weeks_list[j]['past_three_weeks_total'] += matchup.away_score
+                    if isinstance(home_team, Team):
+                        if home_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
+                            three_weeks_list[j]['past_three_weeks_total'] += matchup.home_score
+                    if isinstance(away_team, Team):
+                        if away_team.team_abbrev == three_weeks_list[j]['team_abbrev']:
+                            three_weeks_list[j]['past_three_weeks_total'] += matchup.away_score
 
         def sort_three_weeks_list(list: list):
             return list['past_three_weeks_total']
 
         three_weeks_list.sort(key=sort_three_weeks_list, reverse=True)
         return three_weeks_list
-
+    
     def __get_list_team_names_for_past_three_weeks(self, list_to_populate):
         for team in self.league.teams:
             # print(str(team.team_name))

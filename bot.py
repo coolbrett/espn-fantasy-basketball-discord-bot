@@ -1,5 +1,4 @@
 import discord
-
 from LeagueData import LeagueData
 import os
 from dotenv import load_dotenv
@@ -84,8 +83,13 @@ async def three_weeks(interaction: discord.Interaction, week: int = None):
     if week is None:
         week = league_data.find_current_week()
     
+    current_year = league_data.league.year
+    previous_year = current_year - 1
+    previous_weeks = [week - 2, week - 1, week]
+    totals = league_data.three_weeks_total_as_string(week=week)
+
     embed = discord.Embed(title="")
-    embed.add_field(name=f"Past three weeks' totals from weeks {week - 2}, {week - 1}, {week} of {league_data.league.year - 1}-{league_data.league.year}", value=league_data.three_weeks_total_as_string(week=week))
+    embed.add_field(name=f"Past three weeks' totals from weeks {previous_weeks[0]}, {previous_weeks[1]}, {previous_weeks[2]} of {previous_year}-{current_year}", value=totals)
     await interaction.followup.send(embed=embed)
 
 
@@ -454,7 +458,7 @@ async def help_setup_private_league(interaction: discord.Interaction):
     return
 
 @bot.command(name="help-setup", description="Directions on how to get Fantasy League ID", guild_ids=guild_ids)
-async def help_setup_private_league(interaction: discord.Interaction):
+async def help_setup_public_league(interaction: discord.Interaction):
     await interaction.response.send_message("MOBILE APP: Go to the `League Info` tab in your league to get the League ID\n\nWEBSITE: On any page inside the league, the league ID is specified in the URL. Should be 6 digits.")
     return
 
@@ -462,12 +466,9 @@ async def help_setup_private_league(interaction: discord.Interaction):
 async def report_issue(interaction: discord.Interaction):
     await interaction.response.send_message("Report or search for issues here: https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues")
 
-
-
 @bot.event
 async def on_guild_available(guild: discord.Guild):
     #this code runs when the bot joins a server
-    print(f"joined {guild.id}")
     global guild_ids
     if str(guild.id) not in guild_ids:
         guild_ids.append(str(guild.id))
@@ -487,10 +488,15 @@ async def on_application_command_error(context: discord.ApplicationContext, erro
     if isinstance(error, espn_api.requests.espn_requests.ESPNInvalidLeague):
         await context.interaction.response.send_message("League credentials do not match any leagues on ESPN. Re-run /setup with correct credentials.")
 
-
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
+    for guild in bot.guilds:
+        print(f'joined {guild.name}')
+    return
 
-
-bot.run(os.getenv('BOT_TOKEN'))
+try:
+    bot.run(os.getenv('BOT_TOKEN'))
+except Exception as e:
+    print(f"!!! An error occurred: {e}")
+    
