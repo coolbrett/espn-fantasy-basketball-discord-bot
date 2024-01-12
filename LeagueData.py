@@ -276,7 +276,6 @@ class LeagueData:
         """
         Get each team's record if they played all teams every week
         """
-        #DOES NOT WORK WITH YEARS THAT HAVE BYE WEEKS
         records = dict()
         num_of_weeks = self.find_current_week()
         full_weeks = num_of_weeks - 1
@@ -286,49 +285,47 @@ class LeagueData:
                 data = dict()
                 #get dict with keys as team_id and values as score for the week
                 #bye week team object is set to 0
+                has_season_started = False
                 box_scores = self.league.box_scores(matchup_period=week)
                 for box_score in box_scores:
                     if box_score.away_team != 0:
                         data.__setitem__(box_score.away_team.team_id, box_score.away_score)
                     if box_score.home_team != 0:
                         data.__setitem__(box_score.home_team.team_id, box_score.home_score)
+                    if has_season_started == False and (box_score.away_score != 0 or box_score.home_score != 0):
+                        has_season_started = True
 
                 #do W-L-T here
-                #
                 data = dict(sorted(data.items(), key=lambda team: team[1], reverse=True))
                 list_of_scores = list()
                 previous_team_id: int
-                #account for bye weeks in reg season
                 num_of_teams = len(self.league.teams)
-                wins: int
-                if num_of_teams % 2 == 0:
-                    wins = num_of_teams - 1
-                else:
-                    wins = num_of_teams - 2
+                wins = num_of_teams - 1
                 losses = 0
-                for team_id, score in data.items():
-                    if score == 0:
-                        continue
-                    #print(f"{team_id}: {score}")
-                    if list_of_scores.count(score) == 0:
-                        list_of_scores.append(score)
-                    else:
-                        records[previous_team_id]['ties'] += 1
-                        records[team_id]['ties'] += 1
-                        previous_team_id = team_id
-                        continue
+                if has_season_started == True:
+                    for team_id, score in data.items():
+                        if list_of_scores.count(score) == 0:
+                            list_of_scores.append(score)
+                        else:
+                            #leagues that start late will break here because teams technically didn't score so all scores are 0
+                            records[previous_team_id]['ties'] += 1
+                            records[team_id]['ties'] += 1
+                            previous_team_id = team_id
+                            continue
 
-                    if team_id in records:
-                        records[team_id]['wins'] += wins
-                        records[team_id]['losses'] += losses
-                    else:
-                        records.__setitem__(team_id, {'wins': wins, 'losses': losses, 'ties': 0})
-                    
-                    previous_team_id = team_id
-                    wins -= 1
-                    losses += 1
-                week += 1
-                #print("".ljust(20, '-'))
+                        if team_id in records:
+                            records[team_id]['wins'] += wins
+                            records[team_id]['losses'] += losses
+                        else:
+                            records.__setitem__(team_id, {'wins': wins, 'losses': losses, 'ties': 0})
+                        
+                        previous_team_id = team_id
+                        
+                        wins -= 1
+                        losses += 1
+                    week += 1
+                else:
+                    week += 1
         records = dict(sorted(records.items(), key=lambda team: team[1]['wins'], reverse=True))
         return records
 

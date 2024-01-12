@@ -1,7 +1,6 @@
 BUGS 
 -----
 - draft-recap breaks when user inputs a year where league did not exist
-- record-vs-all-teams is broken due to bye weeks
 - scoreboard current year different week just reports current week scoreboard
 - box-score breaks if given abbreviation that doesn't exist
 - commands report inaccurately if fantasy league starts on any other week than week 1
