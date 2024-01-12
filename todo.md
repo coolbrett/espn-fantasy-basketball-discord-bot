@@ -1,6 +1,7 @@
 BUGS 
 -----
 - draft-recap breaks when user inputs a year where league did not exist
+    - need to get how many years a league has been a thing sometime before commands get called, maybe when LeagueData object builds
 - scoreboard current year different week just reports current week scoreboard
 - box-score breaks if given abbreviation that doesn't exist
 - commands report inaccurately if fantasy league starts on any other week than week 1

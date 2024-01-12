@@ -130,7 +130,12 @@ async def draft_recap(interaction: discord.Interaction, year: int = None, round:
 
     embed = discord.Embed(
         title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year) + " Draft Recap")
-    draft_recap = league_data.get_draft_recap()
+    
+    try:
+        draft_recap = league_data.get_draft_recap()
+    except espn_api.exceptions.ESPNInvalidLeague:
+        await interaction.followup.send(f"Your league did not exist in {league_data.league.year}, try a more recent year :)")
+        return
 
     if round is None:
         for round_num, list_of_picks in draft_recap.items():
@@ -485,7 +490,7 @@ async def on_application_command_error(context: discord.ApplicationContext, erro
         print(str(error.original))
         await context.interaction.response.send_message("Your league has not been setup yet, or the credentials given are invalid. Use `/setup` to configure your league.")
     
-    if isinstance(error, espn_api.requests.espn_requests.ESPNInvalidLeague):
+    if isinstance(error.original, espn_api.requests.espn_requests.ESPNInvalidLeague):
         await context.interaction.response.send_message("League credentials do not match any leagues on ESPN. Re-run /setup with correct credentials.")
 
 @bot.event

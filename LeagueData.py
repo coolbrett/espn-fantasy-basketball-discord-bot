@@ -11,7 +11,8 @@ dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 """
-Class for the data being built around the league ID and year given
+This class is used to hold data about the ESPN Fantasy Basketball League 
+and the teams in the league including their schedules, rosters, and player stats
 
 @github coolbrett
 """
@@ -21,11 +22,40 @@ class LeagueData:
 
     def __init__(self, league_id: int, year: int, espn_s2: str = None, swid: str = None):
         """LeagueData holds data about the FBB League"""
-        if espn_s2 != None and swid != None:
-            self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+        if espn_s2 is not None and swid is not None:
+            try:
+                self.league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+            except:
+                self.league = League(league_id=league_id, year=year)
         else:
             self.league = League(league_id=league_id, year=year)
+        
+        self.__create_active_years_list()
 
+    def __create_active_years_list(self):
+        """Creates a list of active years for the league"""
+        self.active_years = []
+        for year in range(2003, 2024):
+            if self.__did_league_exist__(self.league.league_id, year):
+                self.active_years.append(year)
+        print(f"Active years: {self.active_years}")
+
+    def __did_league_exist__(self, league_id: int, year: int) -> bool:
+        """Checks if league existed for a given year"""
+        try:
+            League(league_id=league_id, year=year)
+            return True
+        except:
+            return False
+
+    def __did_league_exist__(self, league_id: int, year: int) -> bool:
+        """Checks if league existed for a given year"""
+        try:
+            League(league_id=league_id, year=year)
+            return True
+        except:
+            return False
+    
     def find_current_week(self):
         """The ESPN API being used doesn't keep track of the current week in the fantasy year it is, 
             so this finds the current week and returns it"""
@@ -112,7 +142,7 @@ class LeagueData:
 
 
     def __report_three_weeks_list(self, three_weeks_list):
-        """Helper method to build report for three weeks statd"""
+        """Helper method to build report for three weeks stats"""
         temp = ""
         count = 1
         temp = "`#   Team".ljust(12) + "3WT`"
@@ -251,25 +281,15 @@ class LeagueData:
         returns a dictionary with the keys as team_id's and the values as percentage 
         of players they have on the top half of the list
         """
-        rostered_players = []
-        if stat == "avg":
-            rostered_players = self.get_list_of_all_players_rostered(stat=stat)
-        else:
-            rostered_players = self.get_list_of_all_players_rostered()
+        rostered_players = self.get_list_of_all_players_rostered(stat=stat) if stat == "avg" else self.get_list_of_all_players_rostered()
+        rostered_players = rostered_players[:len(rostered_players)//2]
+        top_half_player_percentages_by_team = {}
 
-        rostered_players = rostered_players[0:int(len(rostered_players)/2)]
-        top_half_player_percentages_by_team = dict()
-        perc = float(1/len(rostered_players))
+        for team in self.league.teams:
+            team_players = set(player.playerId for player in team.roster)
+            top_half_players = [player for player in rostered_players if player.playerId in team_players]
+            top_half_player_percentages_by_team[team.team_id] = len(top_half_players) / len(rostered_players)
 
-        for roster_player in rostered_players:
-            for team in self.league.teams:
-                for team_player in team.roster:
-                    if team_player.playerId == roster_player.playerId:
-                        if team.team_id in top_half_player_percentages_by_team.keys():
-                            top_half_player_percentages_by_team[team.team_id] += perc
-                        else:
-                            top_half_player_percentages_by_team.__setitem__(team.team_id, perc)
-        
         return top_half_player_percentages_by_team
 
     def get_record_vs_all_teams(self) -> dict:
