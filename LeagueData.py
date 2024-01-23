@@ -30,31 +30,31 @@ class LeagueData:
         else:
             self.league = League(league_id=league_id, year=year)
         
-        self.__create_active_years_list()
+        #this adds significant time (3s-5s) to the creation of this object, needs to be called only when needed
+        #self.__create_active_years_list(espn_s2=espn_s2, swid=swid)
 
-    def __create_active_years_list(self):
+    def __create_active_years_list(self, espn_s2: str = None, swid: str = None):
         """Creates a list of active years for the league"""
         self.active_years = []
-        for year in range(2003, 2024):
-            if self.__did_league_exist__(self.league.league_id, year):
+        for year in range(2017, 2024):
+            if self.__did_league_exist__(self.league.league_id, year, espn_s2=espn_s2, swid=swid):
                 self.active_years.append(year)
         print(f"Active years: {self.active_years}")
 
-    def __did_league_exist__(self, league_id: int, year: int) -> bool:
+    def __did_league_exist__(self, league_id: int, year: int, espn_s2: str = None, swid: str = None) -> bool:
         """Checks if league existed for a given year"""
-        try:
-            League(league_id=league_id, year=year)
-            return True
-        except:
-            return False
-
-    def __did_league_exist__(self, league_id: int, year: int) -> bool:
-        """Checks if league existed for a given year"""
-        try:
-            League(league_id=league_id, year=year)
-            return True
-        except:
-            return False
+        if espn_s2 is not None and swid is not None:
+            try:
+                League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
+                return True
+            except:
+                return False
+        else:
+            try:
+                self.league = League(league_id=league_id, year=year)
+                return True
+            except:
+                return False
     
     def find_current_week(self):
         """The ESPN API being used doesn't keep track of the current week in the fantasy year it is, 
@@ -239,13 +239,15 @@ class LeagueData:
         box_scores_of_week = self.league.box_scores(matchup_period=week)
         
         for box_score in box_scores_of_week:
-            if box_score.home_team.team_id == team_id:
-                box_score.home_lineup.sort(key=lambda player: player.points, reverse=True)
-                return box_score.home_lineup
+            #gotta check for bye week team
+            if box_score.away_team == 0 or box_score.home_team == 0:
+                if box_score.home_team.team_id == team_id:
+                    box_score.home_lineup.sort(key=lambda player: player.points, reverse=True)
+                    return box_score.home_lineup
 
-            if box_score.away_team.team_id == team_id:
-                box_score.away_lineup.sort(key=lambda player: player.points, reverse=True)
-                return box_score.away_lineup
+                if box_score.away_team.team_id == team_id:
+                    box_score.away_lineup.sort(key=lambda player: player.points, reverse=True)
+                    return box_score.away_lineup
 
     def get_team_by_abbreviation(self, team_abbreviation: str) -> Team:
         """

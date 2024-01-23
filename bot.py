@@ -33,6 +33,7 @@ guild_ids = firebase_data.get_all_guild_ids()
 #this runs code upon every command received
 @bot.before_invoke
 async def before_each_command(context: discord.ApplicationContext):
+    await context.interaction.response.defer()
     print(f"Command received from {context.author.name}: {context.command.name}")
     accessible_commands = ["hey", "setup", "help-setup", "help-setup-private"]
     if context.command.name not in accessible_commands:
@@ -43,6 +44,7 @@ async def before_each_command(context: discord.ApplicationContext):
         if guild_id_as_string in guild_ids:
 
             #new - get guild
+            #gets all guilds from firebase, not just the server that called the command
             guild_fb = firebase_data.get_guild_information(str(context.guild_id))
 
             if 'league_id' not in guild_fb['credentials']:
@@ -65,12 +67,12 @@ async def create_league_data(interaction: discord.Interaction, league_id, espn_s
         data = LeagueData(league_id=int(league_id), year=2024, espn_s2=espn_s2, swid=swid)
         return data
     except espn_api.requests.espn_requests.ESPNInvalidLeague:
-        await interaction.response.send_message("League credentials are invalid, use /setup again with correct credentials")
+        await interaction.followup.send("League credentials are invalid, use /setup again with correct credentials")
 
 
 @bot.command(name="hey", description="Say Hey to LeBot!", guild_ids=guild_ids)
 async def hey(interaction: discord.Interaction):
-    await interaction.response.send_message("Hello!", ephemeral=True)
+    await interaction.followup.send("Hello!", ephemeral=True)
 
 
 @bot.command(name="three-weeks",
@@ -78,7 +80,6 @@ async def hey(interaction: discord.Interaction):
              guild_ids=guild_ids)
 @discord.option(name="week", description="Ex: 5 will get totals from weeks 3, 4, and 5")
 async def three_weeks(interaction: discord.Interaction, week: int = None):
-    await interaction.response.defer()
 
     if week is None:
         week = league_data.find_current_week()
@@ -96,7 +97,6 @@ async def three_weeks(interaction: discord.Interaction, week: int = None):
 @bot.command(name="standings", description="Current Standings for Fantasy League", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (current year is default)")
 async def standings(interaction: discord.Interaction, year: int = None):
-    await interaction.response.defer()
     original_year = league_data.league.year
     if year != None:
         league_data.set_year(year=year)
@@ -123,7 +123,6 @@ async def standings(interaction: discord.Interaction, year: int = None):
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 @discord.option(name="round", description="Specific round to get (gets all rounds by default)")
 async def draft_recap(interaction: discord.Interaction, year: int = None, round: int = None):
-    await interaction.response.defer()
     original_year = league_data.league.year
     if year is not None:
         league_data.set_year(year=year)
@@ -180,7 +179,6 @@ async def draft_recap(interaction: discord.Interaction, year: int = None, round:
              guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def abbreviations(interaction: discord.Interaction, year: int = None):
-    await interaction.response.defer()
     original_year = league_data.league.year
     if year is not None:
         league_data.set_year(year=year)
@@ -204,7 +202,6 @@ async def abbreviations(interaction: discord.Interaction, year: int = None):
 @bot.command(name="history", description="Gets Final Standings of the league of the year given", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def history(interaction: discord.Interaction, year: int):
-    await interaction.response.defer()
     original_year = league_data.league.year
     if original_year == year:
         # Don't know how to tell when season is over, so current year is not available until next year starts
@@ -244,7 +241,6 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
     # scoreboard is unable to get playoff matchups
     # Box scores cannot be used before 2019, so command breaks when going to 2018 or earlier
     # Errors out on years where the league has uneven teams -- bye weeks for some teams
-    await interaction.response.defer()
     original_year = league_data.league.year
     if year is not None:
         if week is not None:
@@ -320,7 +316,6 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
 @discord.option(name="week", description="Week to get data from")
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def box_score(interaction: discord.Interaction, team_abbreviation: str, week: int = None, year: int = None):
-    await interaction.response.defer()
     original_year = league_data.league.year
     if year is not None:
         if week is not None:
@@ -364,7 +359,6 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 @discord.option(name="stat", description="type 'avg' to sort players by average, leave blank for totals")
 async def top_half_players_percentage(interaction: discord.Interaction, year: int = None, stat: str = None):
-    await interaction.response.defer()
     original_year = league_data.league.year
     if year is not None:
         league_data.set_year(year=year)
@@ -393,7 +387,6 @@ async def top_half_players_percentage(interaction: discord.Interaction, year: in
 @bot.command(name="record-vs-all-teams", description="Every team's record if they played all teams every week", guild_ids=guild_ids)
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 async def record_vs_all_teams(interaction: discord.Interaction, year: int = None):
-    await interaction.response.defer() 
 
     if year is None:
         year = league_data.league.year
@@ -435,7 +428,6 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
 @discord.option(name="swid", description="Only needed for private leagues -> use /help-private for more information")
 async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s2: str = None, swid: str = None):
     #store this information where guild_id is key, and value is object containing guild_id and league credentials
-    await interaction.response.defer()
     new_league_object_info = dict()
     guild_id = interaction.guild_id
     global league_data
@@ -459,17 +451,17 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
 
 @bot.command(name="help-setup-private", description="Directions on how to get espn_s2 and swid values", guild_ids=guild_ids)
 async def help_setup_private_league(interaction: discord.Interaction):
-    await interaction.response.send_message("You can find these two values after logging into your ESPN Fantasy account and going to any webpage inside of your league. (Chrome Browser) Right click anywhere on the website and click inspect option. From there click Application on the top bar. On the left under Storage section click Cookies then http://fantasy.espn.com. From there you should be able to find your swid and espn_s2 variables and values. It remains the same through different sessions.")
+    await interaction.followup.send("You can find these two values after logging into your ESPN Fantasy account and going to any webpage inside of your league. (Chrome Browser) Right click anywhere on the website and click inspect option. From there click Application on the top bar. On the left under Storage section click Cookies then http://fantasy.espn.com. From there you should be able to find your swid and espn_s2 variables and values. It remains the same through different sessions.")
     return
 
 @bot.command(name="help-setup", description="Directions on how to get Fantasy League ID", guild_ids=guild_ids)
 async def help_setup_public_league(interaction: discord.Interaction):
-    await interaction.response.send_message("MOBILE APP: Go to the `League Info` tab in your league to get the League ID\n\nWEBSITE: On any page inside the league, the league ID is specified in the URL. Should be 6 digits.")
+    await interaction.followup.send("MOBILE APP: Go to the `League Info` tab in your league to get the League ID\n\nWEBSITE: On any page inside the league, the league ID is specified in the URL. Should be 6 digits.")
     return
 
 @bot.command(name="report-issue", description="Details on how to report an issue", guild_ids=guild_ids)
 async def report_issue(interaction: discord.Interaction):
-    await interaction.response.send_message("Report or search for issues here: https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues")
+    await interaction.followup.send("Report or search for issues here: https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues")
 
 @bot.event
 async def on_guild_available(guild: discord.Guild):
@@ -488,10 +480,10 @@ async def on_application_command_error(context: discord.ApplicationContext, erro
 
     if isinstance(error.original, NameError):
         print(str(error.original))
-        await context.interaction.response.send_message("Your league has not been setup yet, or the credentials given are invalid. Use `/setup` to configure your league.")
+        await context.interaction.followup.send("Your league has not been setup yet, or the credentials given are invalid. Use `/setup` to configure your league.")
     
     if isinstance(error.original, espn_api.requests.espn_requests.ESPNInvalidLeague):
-        await context.interaction.response.send_message("League credentials do not match any leagues on ESPN. Re-run /setup with correct credentials.")
+        await context.interaction.followup.send("League credentials do not match any leagues on ESPN. Re-run /setup with correct credentials.")
 
 @bot.event
 async def on_ready():
