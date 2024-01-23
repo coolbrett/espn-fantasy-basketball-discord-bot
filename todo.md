@@ -1,10 +1,6 @@
 BUGS 
 -----
-- draft-recap breaks when user inputs a year where league did not exist
-    - need to get how many years a league has been a thing sometime before commands get called, maybe when LeagueData object builds
-- scoreboard current year different week just reports current week scoreboard
-- box-score breaks if given abbreviation that doesn't exist
-
+- No bugs known
 
 TO-DO 
 -----
@@ -16,6 +12,7 @@ TO-DO
 - Have main be the main discord bot and always have it running, then have a test discord bot set to a development branch
 - Try the logos again
 - Add new useful and advanced stats
+    - on draft recap, show total points and/or average points per game
     - Add commands that fire every so often (weekly and yearly awards)
     - Add compare players command (player1 season1 player2 season2)
     - Add schedule command

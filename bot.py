@@ -123,16 +123,26 @@ async def standings(interaction: discord.Interaction, year: int = None):
 @discord.option(name="year", description="Year to get data from (defaults to current year)")
 @discord.option(name="round", description="Specific round to get (gets all rounds by default)")
 async def draft_recap(interaction: discord.Interaction, year: int = None, round: int = None):
+
+    def check_year_validity(year: int): 
+        if year < 2017 or year > 2024:
+            return False
+        return True
+
     original_year = league_data.league.year
     if year is not None:
-        league_data.set_year(year=year)
+        if check_year_validity(year=year):
+            league_data.set_year(year=year)
+        else:
+            await interaction.followup.send("Year given is invalid, try again with a year that your league existed in")
+            return
 
     embed = discord.Embed(
         title=str((league_data.league.year - 1)) + "-" + str(league_data.league.year) + " Draft Recap")
     
     try:
         draft_recap = league_data.get_draft_recap()
-    except espn_api.exceptions.ESPNInvalidLeague:
+    except espn_api.requests.espn_requests.ESPNInvalidLeague:
         await interaction.followup.send(f"Your league did not exist in {league_data.league.year}, try a more recent year :)")
         return
 
@@ -261,7 +271,7 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
     embeds.append(embed)
 
     #box_scores = league_data.league.box_scores(matchup_period=week)
-    box_scores = league_data.league.box_scores()
+    box_scores = league_data.league.box_scores(matchup_period=week)
 
 
     for box_score in box_scores:
@@ -336,6 +346,9 @@ async def box_score(interaction: discord.Interaction, team_abbreviation: str, we
     
     #main logic
     team = league_data.get_team_by_abbreviation(team_abbreviation=team_abbreviation)
+    if team is None:
+        await interaction.followup.send("Team abbreviation given does not exist in league, try using /abbreviations to get a list of team abbreviations in this league")
+        return
     team_lineup = league_data.get_lineup_for_team(team_id=team.team_id, week=week, year=year)
     embed = discord.Embed(title=f"Week {week} ({year}) Breakdown")
     description = "`NAME".ljust(24) + "PTS`\n"
@@ -483,7 +496,7 @@ async def on_application_command_error(context: discord.ApplicationContext, erro
         await context.interaction.followup.send("Your league has not been setup yet, or the credentials given are invalid. Use `/setup` to configure your league.")
     
     if isinstance(error.original, espn_api.requests.espn_requests.ESPNInvalidLeague):
-        await context.interaction.followup.send("League credentials do not match any leagues on ESPN. Re-run /setup with correct credentials.")
+        await context.interaction.followup.send("League credentials do not match any leagues on ESPN, or league did not exist in year given.")
 
 @bot.event
 async def on_ready():
