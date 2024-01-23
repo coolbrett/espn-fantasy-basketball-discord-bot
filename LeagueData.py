@@ -240,7 +240,7 @@ class LeagueData:
         
         for box_score in box_scores_of_week:
             #gotta check for bye week team
-            if box_score.away_team == 0 or box_score.home_team == 0:
+            if box_score.away_team != 0 and box_score.home_team != 0:
                 if box_score.home_team.team_id == team_id:
                     box_score.home_lineup.sort(key=lambda player: player.points, reverse=True)
                     return box_score.home_lineup
@@ -248,6 +248,16 @@ class LeagueData:
                 if box_score.away_team.team_id == team_id:
                     box_score.away_lineup.sort(key=lambda player: player.points, reverse=True)
                     return box_score.away_lineup
+                
+            elif box_score.away_team != 0:
+                if box_score.away_team.team_id == team_id:
+                    box_score.away_lineup.sort(key=lambda player: player.points, reverse=True)
+                    return box_score.away_lineup
+                
+            elif box_score.home_team != 0:
+                if box_score.home_team.team_id == team_id:
+                    box_score.home_lineup.sort(key=lambda player: player.points, reverse=True)
+                    return box_score.home_lineup
 
     def get_team_by_abbreviation(self, team_abbreviation: str) -> Team:
         """
