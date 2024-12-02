@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 import time
+from logger_config import logger
 import datetime as datetime
 class FirebaseData:
     """
@@ -18,7 +19,7 @@ class FirebaseData:
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://fantasy-basketball-bot-default-rtdb.firebaseio.com/'
         })
-        print("firebase connected")
+        logger.info("firebase connected")
 
     def add_new_guild(self, data: dict, guild_id: str) -> None:
         """
@@ -86,7 +87,8 @@ class FirebaseData:
             keys_as_list = list(data[0]['guilds'].keys())
             for key in keys_as_list:
                 guild_ids.append(key)
-        print(f"FirebaseData guild_ids: {guild_ids}")
+        #logger.info(f"FirebaseData guild_ids: {guild_ids}")
+        logger.info(f"Number of guilds: {len(guild_ids)}")
         return guild_ids
     
     def get_guild_information(self, guild_id: str) -> dict:
