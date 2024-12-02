@@ -4,6 +4,7 @@ from espn_api.basketball import box_player, box_score
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from logger_config import logger
 
 # All sensitive data needs to be held and imported in the .env file
 # the .env has to be loaded first before being used
@@ -39,7 +40,7 @@ class LeagueData:
         for year in range(2017, 2024):
             if self.__did_league_exist__(self.league.league_id, year, espn_s2=espn_s2, swid=swid):
                 self.active_years.append(year)
-        print(f"Active years: {self.active_years}")
+        logger.info(f"Active years: {self.active_years}")
 
     def __did_league_exist__(self, league_id: int, year: int, espn_s2: str = None, swid: str = None) -> bool:
         """Checks if league existed for a given year"""
@@ -131,7 +132,6 @@ class LeagueData:
     
     def __get_list_team_names_for_past_three_weeks(self, list_to_populate):
         for team in self.league.teams:
-            # print(str(team.team_name))
             list_to_populate.append({'team_name': team.team_name, 'past_three_weeks_total': 0, 'team_object': team})
 
 
