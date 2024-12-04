@@ -37,51 +37,43 @@ firebase_data = FirebaseData()
 guild_ids = firebase_data.get_all_guild_ids()
 
 def generate_league_data():
-    """Decorator to run pre-command logic for commands requiring guild_id and league_id."""
     def decorator(func):
         @wraps(func)
         async def wrapper(interaction: discord.Interaction, *args, **kwargs):
-            await interaction.response.defer()
-            logger.info(f"Command received from {interaction.user.name}: {interaction.command.name}")
+            global league_data
+
+            # Ensure response is deferred to prevent timeout
+            if not interaction.response.is_done():
+                await interaction.response.defer(ephemeral=True)
 
             # Skip pre-command logic for DMs or commands without a guild context
             if interaction.guild_id is None:
                 return await func(interaction, *args, **kwargs)
 
-            # Global league data access
-            global league_data
             guild_id_as_string = str(interaction.guild_id)
 
             # Check if the guild is in Firebase
             if guild_id_as_string in guild_ids:
                 guild_fb = firebase_data.get_guild_information(guild_id_as_string)
 
-                # Check if the guild exists in Firebase and has credentials
-                if guild_fb is None or 'credentials' not in guild_fb or 'league_id' not in guild_fb['credentials']:
+                if not guild_fb or 'credentials' not in guild_fb or 'league_id' not in guild_fb['credentials']:
                     await interaction.followup.send(
-                        "Your league is not set up! Use /setup to configure your league credentials."
+                        "Your league is not set up! Use `/setup` to configure your league credentials."
                     )
                     return
 
-
                 league_id = guild_fb['credentials']['league_id']
-
-                # Create league with or without private credentials
                 if 'espn_s2' in guild_fb['credentials'] and 'swid' in guild_fb['credentials']:
                     espn_s2 = guild_fb['credentials']['espn_s2']
                     swid = guild_fb['credentials']['swid']
-                    league_data = await create_league_data(
-                        interaction=interaction, league_id=league_id, espn_s2=espn_s2, swid=swid
-                    )
+                    league_data = await create_league_data(interaction, league_id, espn_s2, swid)
                 else:
-                    league_data = await create_league_data(
-                        interaction=interaction, league_id=league_id, espn_s2=None, swid=None
-                    )
-            
-            # Execute the original command
+                    league_data = await create_league_data(interaction, league_id, None, None)
+
             return await func(interaction, *args, **kwargs)
         return wrapper
     return decorator
+
 
 async def create_league_data(interaction: discord.Interaction, league_id, espn_s2, swid):
         """Helper function to handle creation of LeagueData"""
@@ -519,15 +511,133 @@ async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s
         )
 
 
-@bot.tree.command(name="help-setup-private", description="Directions on how to get espn_s2 and swid values", )
+@bot.tree.command(name="help-setup-private-league", description="Directions on how to get espn_s2 and swid values")
 async def help_setup_private_league(interaction: discord.Interaction):
-    await interaction.followup.send("You can find these two values after logging into your ESPN Fantasy account and going to any webpage inside of your league. (Chrome Browser) Right click anywhere on the website and click inspect option. From there click Application on the top bar. On the left under Storage section click Cookies then http://fantasy.espn.com. From there you should be able to find your swid and espn_s2 variables and values. It remains the same through different sessions.")
+    # Acknowledge the interaction
+    await interaction.response.defer(ephemeral=True)
+
+    # General explanation embed (required reading)
+    embed_general = discord.Embed(
+        title="How to Set Up a Private League",
+        description=(
+            "⚠️ **Required Reading**\n\n"
+            "To set up your league for private access, you'll need the following credentials:\n\n"
+            "- **League ID**: A 6-digit identifier for your league. Use `/help-setup` if you need assistance locating it.\n"
+            "- **espn_s2**: A session token from ESPN's Fantasy Basketball site.\n"
+            "- **swid**: A unique identifier tied to your ESPN account.\n\n"
+            "**Follow the steps below using your browser to locate these credentials.**"
+        ),
+        color=discord.Color.red(),
+    )
+
+    # Instructions for Chrome
+    embed_chrome = discord.Embed(
+        title="Chrome",
+        description=(
+            "1. Open Chrome and go to the ESPN Fantasy Basketball website.\n"
+            "2. Log in to your account.\n"
+            "3. Right-click anywhere on the page and select **Inspect**.\n"
+            "4. In the DevTools window, click **Application** in the top bar.\n"
+            "5. Under **Storage**, select **Cookies** > `http://fantasy.espn.com`.\n"
+            "6. Find the values for `espn_s2` and `SWID` in the cookie list."
+        ),
+        color=discord.Color.green(),
+    )
+
+    # Instructions for Firefox
+    embed_firefox = discord.Embed(
+        title="Firefox",
+        description=(
+            "1. Open Firefox and navigate to the ESPN Fantasy Basketball website.\n"
+            "2. Log in to your account.\n"
+            "3. Right-click anywhere on the page and select **Inspect**.\n"
+            "4. Click the **Storage** tab in the Developer Tools.\n"
+            "5. Expand **Cookies** and select `http://fantasy.espn.com`.\n"
+            "6. Locate the `espn_s2` and `SWID` values in the cookie list."
+        ),
+        color=discord.Color.orange(),
+    )
+
+    # Instructions for Edge
+    embed_edge = discord.Embed(
+        title="Edge",
+        description=(
+            "1. Open Microsoft Edge and go to the ESPN Fantasy Basketball website.\n"
+            "2. Log in to your account.\n"
+            "3. Right-click anywhere on the page and select **Inspect**.\n"
+            "4. In the DevTools window, click **Application** in the top bar.\n"
+            "5. Under **Storage**, select **Cookies** > `http://fantasy.espn.com`.\n"
+            "6. Find the `espn_s2` and `SWID` values in the cookie list."
+        ),
+        color=discord.Color.purple(),
+    )
+
+    # Instructions for Safari
+    embed_safari = discord.Embed(
+        title="Safari",
+        description=(
+            "1. Open Safari and navigate to the ESPN Fantasy Basketball website.\n"
+            "2. Log in to your account.\n"
+            "3. Enable the Develop menu by going to **Safari > Preferences > Advanced** and checking "
+            "the box for **Show Develop menu in menu bar**.\n"
+            "4. Click **Develop** in the top menu bar and select **Show Web Inspector**.\n"
+            "5. Go to the **Storage** tab and expand **Cookies**.\n"
+            "6. Locate the `espn_s2` and `SWID` values in the cookie list."
+        ),
+        color=discord.Color.blue(),
+    )
+
+    # Send all embeds
+    await interaction.followup.send(
+        embeds=[embed_general, embed_chrome, embed_firefox, embed_edge, embed_safari], ephemeral=True
+    )
+
+
+@bot.tree.command(name="help-setup-public-league", description="Directions on how to get Fantasy League ID")
+async def help_setup_public_league(interaction: discord.Interaction):
+    # Acknowledge the interaction
+    await interaction.response.defer(ephemeral=True)
+
+    # General explanation embed
+    embed_general = discord.Embed(
+        title="How to Find Your Fantasy League ID",
+        description=(
+            "Your League ID is a unique 6-digit identifier for your ESPN Fantasy Basketball league. "
+            "Follow the steps below to locate your League ID based on your platform."
+        ),
+        color=discord.Color.blue(),
+    )
+
+    # Mobile app instructions embed
+    embed_mobile = discord.Embed(
+        title="Steps for Mobile App",
+        description=(
+            "1. Open the **ESPN Fantasy** app on your device.\n"
+            "2. Navigate to the **League Info** tab within your league.\n"
+            "3. Locate the 6-digit League ID listed under league details."
+        ),
+        color=discord.Color.green(),
+    )
+
+    # Website instructions embed
+    embed_website = discord.Embed(
+        title="Steps for Website",
+        description=(
+            "1. Open a browser and go to the ESPN Fantasy Basketball website.\n"
+            "2. Navigate to any page inside your league.\n"
+            "3. Look at the URL in your browser's address bar.\n"
+            "   - Example URL: `https://fantasy.espn.com/basketball/league?leagueId=123456`\n"
+            "4. The 6-digit number (`123456`) is your League ID."
+        ),
+        color=discord.Color.orange(),
+    )
+
+    # Send all embeds as a response
+    await interaction.followup.send(
+        embeds=[embed_general, embed_mobile, embed_website], ephemeral=True
+    )
     return
 
-@bot.tree.command(name="help-setup", description="Directions on how to get Fantasy League ID", )
-async def help_setup_public_league(interaction: discord.Interaction):
-    await interaction.followup.send("MOBILE APP: Go to the `League Info` tab in your league to get the League ID\n\nWEBSITE: On any page inside the league, the league ID is specified in the URL. Should be 6 digits.")
-    return
 
 @bot.tree.command(name="report-issue", description="Details on how to report an issue", )
 async def report_issue(interaction: discord.Interaction):
@@ -565,6 +675,139 @@ async def on_ready():
     # for guild in bot.guilds:
     #     logger.info(f'joined {guild.name}')
     return
+
+@bot.event
+async def on_interaction(interaction: discord.Interaction):
+    if interaction.command:  # Check if the interaction is a slash command
+        logger.info(f"Command received from {interaction.user.name}: {interaction.command.name}")
+
+#NEW SHIT
+from discord import app_commands, Interaction, Embed
+from discord.ext import commands
+from discord.ui import View, Button
+
+class MenuView(View):
+    def __init__(self, league_data):
+        super().__init__(timeout=120)  # Set a timeout for the menu
+        self.league_data = league_data  # Pass league data to the view
+
+    @discord.ui.button(label="Scoreboard", style=discord.ButtonStyle.primary, custom_id="scoreboard_button")
+    async def scoreboard_button(self, interaction: Interaction, button: Button):
+        if self.league_data is None:
+            await interaction.response.send_message(
+                "League data is not set up yet. Use `/setup` to configure your league.", ephemeral=True
+            )
+            return
+
+        # Generate the scoreboard
+        week = self.league_data.find_current_week()
+        box_scores = self.league_data.league.box_scores(matchup_period=week)
+        embed = Embed(title=f"Scoreboard - Week {week}", color=discord.Color.blue())
+
+        for box_score in box_scores:
+            if not box_score.away_lineup or not box_score.home_lineup:
+                continue  # Skip matchups with bye weeks
+
+            embed.add_field(
+                name=f"{box_score.away_team.team_name} vs {box_score.home_team.team_name}",
+                value=f"Score: {box_score.away_score} - {box_score.home_score}",
+                inline=False,
+            )
+
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Standings", style=discord.ButtonStyle.primary, custom_id="standings_button")
+    async def standings_button(self, interaction: Interaction, button: Button):
+        if self.league_data is None:
+            await interaction.response.send_message(
+                "League data is not set up yet. Use `/setup` to configure your league.", ephemeral=True
+            )
+            return
+
+        # Generate the standings
+        standings = self.league_data.get_standings()
+        embed = Embed(title="League Standings", color=discord.Color.green())
+
+        for division, teams in standings.items():
+            description = "\n".join(
+                [f"{i+1}. {team.team_name} ({team.wins}-{team.losses}-{team.ties})" for i, team in enumerate(teams)]
+            )
+            embed.add_field(name=division, value=description, inline=False)
+
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Box Score", style=discord.ButtonStyle.primary, custom_id="boxscore_button")
+    async def boxscore_button(self, interaction: Interaction, button: Button):
+        if self.league_data is None:
+            await interaction.response.send_message(
+                "League data is not set up yet. Use `/setup` to configure your league.", ephemeral=True
+            )
+            return
+
+        # Prompt the user to select a team
+        embed = Embed(
+            title="Box Score",
+            description="Please use `/box-score` command to specify a team abbreviation and week.",
+            color=discord.Color.orange(),
+        )
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Stats (Last 3 Weeks)", style=discord.ButtonStyle.primary, custom_id="stats_button")
+    async def stats_button(self, interaction: Interaction, button: Button):
+        if self.league_data is None:
+            await interaction.response.send_message(
+                "League data is not set up yet. Use `/setup` to configure your league.", ephemeral=True
+            )
+            return
+
+        # Generate the stats for the last three weeks
+        week = self.league_data.find_current_week()
+        totals = self.league_data.three_weeks_total_as_string(week=week)
+        embed = Embed(
+            title="Stats (Last 3 Weeks)",
+            description=f"Totals for weeks {week-2}, {week-1}, {week}:",
+            color=discord.Color.purple(),
+        )
+        embed.add_field(name="Team Totals", value=totals)
+
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Exit", style=discord.ButtonStyle.danger, custom_id="exit_button")
+    async def exit_button(self, interaction: Interaction, button: Button):
+        await interaction.response.edit_message(content="Menu closed.", embed=None, view=None)
+        self.stop()
+
+
+@bot.tree.command(name="menu", description="Interactive menu for league information.")
+@generate_league_data()
+async def menu(interaction: Interaction):
+    global league_data
+
+    # Ensure league_data is initialized
+    if league_data is None:
+        await interaction.followup.send(
+            "League data is not set up yet. Use `/setup` to configure your league.", ephemeral=True
+        )
+        return
+
+    local_league_data = league_data
+
+    # Create the initial embed
+    embed = Embed(
+        title="Welcome to the League Menu",
+        description="Use the buttons below to navigate through the options.",
+        color=discord.Color.blurple(),
+    )
+
+    # Create the interactive view
+    view = MenuView(league_data=local_league_data)
+
+    # Send the response using followup
+    try:
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+
 
 try:
     bot.run(os.getenv('BOT_TOKEN'))
