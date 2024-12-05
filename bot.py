@@ -656,13 +656,15 @@ async def report_issue(interaction: discord.Interaction):
 
 @bot.event
 async def on_guild_available(guild: discord.Guild):
-    #this code runs when the bot joins a server
+    # This code runs when the bot joins a server
     global guild_ids
     if str(guild.id) not in guild_ids:
         guild_ids.append(str(guild.id))
-        logger.info("sending ID to firebase upon joining")
+        logger.info(f"Bot joined a new server: {guild.name} (ID: {guild.id})")
+        logger.info("Sending server ID to Firebase")
         firebase_data.add_new_guild({str(guild.id): {'guild_id': str(guild.id)}}, guild_id=guild.id)
     return
+
 
 @bot.event
 async def on_application_command_error(context: discord.Interaction, error):

@@ -88,7 +88,7 @@ class FirebaseData:
             for key in keys_as_list:
                 guild_ids.append(key)
         #logger.info(f"FirebaseData guild_ids: {guild_ids}")
-        logger.info(f"Number of guilds: {len(guild_ids)}")
+        logger.info(f"Active Server Count: {len(guild_ids)}")
         return guild_ids
     
     def get_guild_information(self, guild_id: str) -> dict:
