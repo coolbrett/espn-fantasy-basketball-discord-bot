@@ -345,7 +345,7 @@ async def scoreboard(interaction: discord.Interaction, week: int = None, year: i
 
     await interaction.followup.send(embeds=embeds)
 
-@bot.tree.command(name="box-score", description="Grab box score for a team in any week or year",
+@bot.tree.command(name="box-score", description="[BROKEN] Grab box score for a team in any week or year",
              )
 @app_commands.describe(
     team_abbreviation="Abbreviation of Team you want box score of",
@@ -639,9 +639,20 @@ async def help_setup_public_league(interaction: discord.Interaction):
     return
 
 
-@bot.tree.command(name="report-issue", description="Details on how to report an issue", )
+@bot.tree.command(name="report-issue", description="Report an issue or provide feedback")
 async def report_issue(interaction: discord.Interaction):
-    await interaction.followup.send("Report or search for issues here: https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues")
+    # Respond with a polished and appreciative ephemeral message
+    await interaction.response.send_message(
+        content=(
+            "Thank you for taking the time to help improve this bot! 🤖💙\n\n"
+            "This bot is currently in early development, and your feedback is invaluable in making it better. "
+            "If you encounter any issues or have suggestions, please report them on GitHub.\n\n"
+            "**➡️ [Report or view issues here](https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues)**\n\n"
+            "Your contribution means a lot, and I appreciate your patience and support as the bot evolves!"
+        ),
+        ephemeral=True  # Make the message private
+    )
+
 
 @bot.event
 async def on_guild_available(guild: discord.Guild):
@@ -668,6 +679,7 @@ async def on_application_command_error(context: discord.Interaction, error):
 @bot.event
 async def on_ready():
     logger.info(f'We have logged in as {bot.user}')
+    await bot.change_presence(activity=discord.Game(name="ESPN Fantasy Basketball | sync your league with /setup!"))
     
     # Sync commands globally
     await bot.tree.sync()
@@ -778,7 +790,7 @@ class MenuView(View):
         self.stop()
 
 
-@bot.tree.command(name="menu", description="Interactive menu for league information.")
+@bot.tree.command(name="dev-menu", description="[DEV] Interactive menu for league information.")
 @generate_league_data()
 async def menu(interaction: Interaction):
     global league_data
