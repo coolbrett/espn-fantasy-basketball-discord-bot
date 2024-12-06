@@ -9,6 +9,12 @@ import espn_api
 from functools import wraps
 from FirebaseData import FirebaseData
 from logger_config import logger
+from datetime import datetime
+from discord import Embed, ButtonStyle
+from discord.ui import View, Button
+from views.setup import SetupView
+from utils import create_league_data
+
 
 
 """
@@ -56,34 +62,29 @@ def generate_league_data():
             if guild_id_as_string in guild_ids:
                 guild_fb = firebase_data.get_guild_information(guild_id_as_string)
 
-                if not guild_fb or 'credentials' not in guild_fb or 'league_id' not in guild_fb['credentials']:
+                # Ensure the guild has the required `fantasy_league_info`
+                if not guild_fb or 'fantasy_league_info' not in guild_fb or 'league_id' not in guild_fb['fantasy_league_info']:
                     await interaction.followup.send(
-                        "Your league is not set up! Use `/setup` to configure your league credentials."
+                        "Your league is not currently registered with the bot. To register your league, you need to call the `/setup` command with your league ID.\n\n"
+                        "- **Public Leagues**: If you don't know your league ID, use the `/help_public_league` command for guidance on finding it.\n"
+                        "- **Private Leagues**: If your league is private, you'll also need your `espn_s2` and `swid` credentials. Use `/help_private_league` for instructions on retrieving these credentials.\n\n"
+                        "Once you have the required information, use `/setup` to register your league.",
+                        ephemeral=True
                     )
                     return
 
-                league_id = guild_fb['credentials']['league_id']
-                if 'espn_s2' in guild_fb['credentials'] and 'swid' in guild_fb['credentials']:
-                    espn_s2 = guild_fb['credentials']['espn_s2']
-                    swid = guild_fb['credentials']['swid']
-                    league_data = await create_league_data(interaction, league_id, espn_s2, swid)
-                else:
-                    league_data = await create_league_data(interaction, league_id, None, None)
+                # Fetch league information
+                fantasy_league_info = guild_fb['fantasy_league_info']
+                league_id = fantasy_league_info['league_id']
+
+                # Handle ESPN credentials if available
+                espn_s2 = fantasy_league_info.get('espn', {}).get('espn_s2')
+                swid = fantasy_league_info.get('espn', {}).get('swid')
+                league_data = await create_league_data(interaction, league_id, espn_s2, swid)
 
             return await func(interaction, *args, **kwargs)
         return wrapper
     return decorator
-
-
-async def create_league_data(interaction: discord.Interaction, league_id, espn_s2, swid):
-        """Helper function to handle creation of LeagueData"""
-        try:
-            #specifying 2025 as year because it is the most recent year
-            data = LeagueData(league_id=int(league_id), year=2025, espn_s2=espn_s2, swid=swid)
-            return data
-        except espn_api.requests.espn_requests.ESPNInvalidLeague:
-            await interaction.followup.send("League credentials are invalid, use /setup again with correct credentials")
-
 
 @bot.tree.command(name="hey", description="Say Hey to LeBot!", )
 async def hey(interaction: discord.Interaction):
@@ -467,49 +468,17 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
     
     await interaction.followup.send(embed=embed)
 
-@bot.tree.command(name="setup", description="Provide ESPN Fantasy Basketball League information")
-@app_commands.describe(
-    fantasy_league_id="Fantasy League ID -> use /help-setup for more information",
-    espn_s2="Only needed for private leagues -> use /help-setup-private for more information",
-    swid="Only needed for private leagues -> use /help-private for more information"
-)
-async def setup(interaction: discord.Interaction, fantasy_league_id: int, espn_s2: str = None, swid: str = None):
-    # Store this information where guild_id is key, and value is object containing guild_id and league credentials
-    new_league_object_info = dict()
-    guild_id = interaction.guild_id
-    global league_data
-
-    # Defer the response immediately to prevent timeout
-    await interaction.response.defer(ephemeral=True)
-
-    try:
-        logger.info("Setup called -- Creating league in setup")
-        league_data = await create_league_data(
-            interaction=interaction, league_id=fantasy_league_id, espn_s2=espn_s2, swid=swid
-        )
-
-        # Add league info to the dictionary
-        if espn_s2 is not None and swid is not None:
-            new_league_object_info["credentials"] = {
-                "league_id": str(fantasy_league_id),
-                "espn_s2": str(espn_s2),
-                "swid": str(swid),
-            }
-        else:
-            new_league_object_info["credentials"] = {"league_id": str(fantasy_league_id)}
-
-        logger.info("Sending new league object to Firebase")
-        firebase_data.add_new_guild(new_league_object_info, str(guild_id))
-
-        # Send success message
-        logger.info("New league setup successful for fantasy_league_id: " + str(fantasy_league_id))
-        await interaction.followup.send("Setup successful! Call `/standings` to see how your season is going!", ephemeral=True)
-    except Exception as e:
-        logger.error(f"Error during setup: {e}")
-        await interaction.followup.send(
-            "An error occurred during setup :( Make sure all parameters given are correct for your league. If setup issues persist, open an issue in GitHub here: https://github.com/coolbrett/espn-fantasy-basketball-discord-bot/issues", ephemeral=True
-        )
-
+# Command to initiate the setup process
+@bot.tree.command(name="setup", description="Setup your Fantasy League")
+async def setup(interaction: discord.Interaction):
+    """Initial setup command to display the public/private toggle."""
+    view = SetupView(firebase_data=firebase_data)
+    embed = Embed(
+        title="Setup Your Fantasy League",
+        description="Choose the type of your league to proceed with the setup:",
+        color=discord.Color.blurple(),
+    )
+    await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 @bot.tree.command(name="help-setup-private-league", description="Directions on how to get espn_s2 and swid values")
 async def help_setup_private_league(interaction: discord.Interaction):
@@ -666,17 +635,30 @@ async def on_guild_available(guild: discord.Guild):
     return
 
 
-@bot.event
-async def on_application_command_error(context: discord.Interaction, error):
-    logger.info("In app command error")
-    logger.error(error)
+@bot.tree.error
+async def on_application_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    """
+    Logs errors for unrecognized slash commands without responding to the user.
+    """
+    if isinstance(error, app_commands.CommandNotFound):
+        # Log the error for debugging
+        logger.warning(f"Unrecognized command used by {interaction.user}: {interaction.data}")
+    else:
+        # Log other errors without responding
+        logger.error(f"An unexpected error occurred: {error}")
 
-    if isinstance(error.original, NameError):
-        logger.error(str(error.original))
-        await context.interaction.followup.send("Your league has not been setup yet, or the credentials given are invalid. Use `/setup` to configure your league.")
-    
-    if isinstance(error.original, espn_api.requests.espn_requests.ESPNInvalidLeague):
-        await context.interaction.followup.send("League credentials do not match any leagues on ESPN, or league did not exist in year given.")
+@bot.event
+async def on_command_error(ctx: commands.Context, error: commands.CommandError):
+    """
+    Handles errors for commands registered with discord.ext.commands.
+    """
+    if isinstance(error, commands.CommandNotFound):
+        # Log the unrecognized command but do not respond to the user
+        logger.warning(f"Unrecognized prefix command used: {ctx.message.content}")
+    else:
+        # Log unexpected errors
+        logger.error(f"An unexpected command error occurred: {error}")
+
 
 @bot.event
 async def on_ready():
