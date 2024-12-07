@@ -472,13 +472,14 @@ async def record_vs_all_teams(interaction: discord.Interaction, year: int = None
 @bot.tree.command(name="setup", description="Setup your Fantasy League")
 async def setup(interaction: discord.Interaction):
     """Initial setup command to display the public/private toggle."""
-    view = SetupView(firebase_data=firebase_data)
+    view = SetupView(firebase_data=firebase_data, original_interaction=interaction)
     embed = Embed(
         title="Setup Your Fantasy League",
         description="Choose the type of your league to proceed with the setup:",
         color=discord.Color.blurple(),
     )
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
 
 @bot.tree.command(name="help-setup-private-league", description="Directions on how to get espn_s2 and swid values")
 async def help_setup_private_league(interaction: discord.Interaction):
