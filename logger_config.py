@@ -4,7 +4,7 @@ import sys
 
 # Define custom log colors for log levels
 log_colors = {
-    "DEBUG": "cyan",
+    "DEBUG": "bold_cyan",
     "INFO": "bold_blue",  # Bold blue for "INFO"
     "WARNING": "bold_yellow",
     "ERROR": "bold_red",
@@ -25,4 +25,7 @@ if not logger.hasHandlers():  # Ensure handlers are not duplicated
     handler = logging.StreamHandler(stream=sys.stdout)
     handler.setFormatter(log_formatter)
     logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+
+# Export the logger instance for external use
+__all__ = ["logger"]

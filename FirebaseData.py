@@ -23,13 +23,15 @@ class FirebaseData:
 
     def add_new_guild(self, data: dict, guild_id: str) -> None:
         """
-        Add new guild to the database for the bot to recognize
-
-        @param data -> Key should be guild_id and value should be another object with guild_id, league_id, and private league creds if needed
+        Add new guild to the database for the bot to recognize.
+        
+        @param data: Dictionary containing the data for the guild.
+        @param guild_id: The guild ID as a string.
         """
-        # guild_id = next(iter(data))
         ref = db.reference(f'fbbot/guilds/{guild_id}')
-        ref.update(data)
+        ref.set(data)  # Replaces the entire entry under guild_id with the new data.
+        #log name and id added
+        logger.info(f"Added guild {data['guild_info']['discord_guild_name']} with id {guild_id}")
 
     def update_guild(self, data: dict) -> None:
         """
@@ -78,18 +80,27 @@ class FirebaseData:
 
     def get_all_guild_ids(self):
         """
-        Gets all guild id's that are in firebase
+        Gets all guild IDs that are in Firebase and logs the count of registered servers.
         """
-        ref = db.reference('fbbot')
-        data = ref.get('guilds')
+        ref = db.reference('fbbot/guilds')
+        data = ref.get()
         guild_ids = list()
-        if data[0] != None:
-            keys_as_list = list(data[0]['guilds'].keys())
-            for key in keys_as_list:
-                guild_ids.append(key)
-        #logger.info(f"FirebaseData guild_ids: {guild_ids}")
-        logger.info(f"Active Server Count: {len(guild_ids)}")
+
+        if data:
+            for guild_id, guild_data in data.items():
+                guild_ids.append(guild_id)
+
+            # Count registered servers
+            registered_count = sum(
+                1 for guild_data in data.values() if guild_data.get("guild_info", {}).get("is_registered", False)
+            )
+
+            # Log the count of registered servers
+            logger.info(f"Total Servers: {len(guild_ids)}")
+            logger.info(f"Registered Servers: {registered_count}")
+
         return guild_ids
+
     
     def get_guild_information(self, guild_id: str) -> dict:
         """
